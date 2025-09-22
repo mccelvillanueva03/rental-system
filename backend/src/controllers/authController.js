@@ -3,12 +3,11 @@ import { signToken } from "../utils/jwt.js";
 
 export async function getAllUsers(req, res) {
   try {
-    const users = await User.find().sort({createdAt: -1});
+    const users = await User.find().sort({ createdAt: -1 });
     res.status(200).json(users);
-
   } catch (error) {
-    console.log("Error in getAllUsers controller:". error);
-    res.status(500).json({message: "Internal Server Error"});
+    console.log("Error in getAllUsers controller:".error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 }
 
@@ -40,20 +39,21 @@ export async function login(req, res) {
 
 export async function signup(req, res) {
   try {
-    let { email, password, fullName } = req.body || {};
-    if (!email || !password || !fullName) {
+    let { email, password, firstName, lastName } = req.body || {};
+    if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required!." });
     }
 
     email = String(email).trim().toLowerCase();
-    fullName = String(fullName).trim();
+    firstName = String(firstName).trim();
+    lastName = String(lastName).trim();
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email is already in use." });
     }
 
-    const newUser = new User({ email, password, fullName });
+    const newUser = new User({ email, password, firstName, lastName });
     await newUser.save();
 
     const token = signToken(newUser);
