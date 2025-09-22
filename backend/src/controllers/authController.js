@@ -62,14 +62,14 @@ export async function signup(req, res) {
     }
 
     const newUser = new User({ email, password, firstName, lastName });
-    sendEmailOTP(newUser, res)
     await newUser.save();
+    sendEmailOTP(newUser)
 
+    res.status(200).json({ message: "OTP sent to your email. Please verify." });
     // const token = signToken(newUser);
     // const userSafe = newUser.toObject();
     // delete userSafe.password;
-
-    return res.status(201).json({ token, user: userSafe });
+    // return res.status(201).json({ token, user: userSafe });
   } catch (error) {
     if (error?.code === 11000) {
       return res.status(409).json({ message: "Email is already in use." });
