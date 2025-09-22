@@ -1,6 +1,13 @@
 import User from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
 
+export async function getUsers(req, res) {
+  try {
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export async function login(req, res) {
   try {
     const { email, password } = req.body || {};
@@ -21,8 +28,8 @@ export async function login(req, res) {
     delete userSafe.password;
 
     return res.status(200).json({ token, user: userSafe });
-  } catch (err) {
-    console.error("Login error:", err);
+  } catch (error) {
+    console.error("Login error:", error);
     return res.status(500).json({ message: "Server error." });
   }
 }
