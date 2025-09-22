@@ -1,10 +1,14 @@
 import User from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
 
-export async function getUsers(req, res) {
+export async function getAllUsers(req, res) {
   try {
+    const users = await User.find().sort({createdAt: -1});
+    res.status(200).json(users);
+
   } catch (error) {
-    console.log(error)
+    console.log("Error in getAllUsers controller:". error);
+    res.status(500).json({message: "Internal Server Error"});
   }
 }
 
