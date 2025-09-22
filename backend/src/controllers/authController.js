@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
+import { sendEmailOTP } from "../utils/sendEmailOTP.js";
 
 export async function getAllUsers(req, res) {
   try {
@@ -19,8 +20,15 @@ export async function login(req, res) {
         .status(400)
         .json({ message: "Email and password are required." });
     }
-
+    
     const user = await User.findOne({ email }).select("+password");
+
+    if (!user.isEmailVerified) {
+      return res
+        .status(401)
+        .json({ message: "Please verify your email before logging in." });
+    }
+
     if (!user) return res.status(401).json({ message: "Invalid credentials." });
 
     const ok = await user.comparePassword(password);
@@ -54,11 +62,12 @@ export async function signup(req, res) {
     }
 
     const newUser = new User({ email, password, firstName, lastName });
+    sendEmailOTP(newUser, res)
     await newUser.save();
 
-    const token = signToken(newUser);
-    const userSafe = newUser.toObject();
-    delete userSafe.password;
+    // const token = signToken(newUser);
+    // const userSafe = newUser.toObject();
+    // delete userSafe.password;
 
     return res.status(201).json({ token, user: userSafe });
   } catch (error) {
@@ -68,4 +77,8 @@ export async function signup(req, res) {
     console.error("Signup error:", error);
     return res.status(500).json({ message: "Server error." });
   }
+}
+
+export async function verifyEmail() {
+  
 }
