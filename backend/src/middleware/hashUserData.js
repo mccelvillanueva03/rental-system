@@ -5,7 +5,7 @@ async function hashUserData(next) {
         const saltPassword = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, saltPassword);
     }
-    if (this.isModified("otp")) {
+    if (this.isModified("otp") && this.otp ) {
         const saltOtp = await bcrypt.genSalt(10);
         this.otp = await bcrypt.hash(this.otp, saltOtp);
     }
