@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
     password: { type: String, required: true, minlength: 6, select: false },
-    role: { type: String, default: "user" },
+    role: { type: String, default: "tenant" },
     
     isEmailVerified: { type: Boolean, default: false },
     otp: { type: String },
