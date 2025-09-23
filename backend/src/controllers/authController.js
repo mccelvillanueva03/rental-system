@@ -22,7 +22,7 @@ export async function login(req, res) {
         .status(400)
         .json({ message: "Email and password are required." });
     }
-    
+
     const user = await User.findOne({ email }).select("+password");
 
     //checks if user is verified
@@ -50,7 +50,8 @@ export async function login(req, res) {
 
 //signup
 export async function signup(req, res) {
-  try {//check for empty fields
+  try {
+    //check for empty fields
     let { email, password, firstName, lastName } = req.body || {};
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required!." });
@@ -68,10 +69,14 @@ export async function signup(req, res) {
     const newUser = new User({ email, password, firstName, lastName });
     await newUser.save();
     //send OTP to user email
-    sendEmailOTP(newUser)
+    sendEmailOTP(newUser);
 
-    res.status(200).json({ message: "OTP sent to your email. Please verify first before logging in." });
-
+    res
+      .status(200)
+      .json({
+        message:
+          "OTP sent to your email. Please verify first before logging in.",
+      });
   } catch (error) {
     if (error?.code === 11000) {
       return res.status(409).json({ message: "Email is already in use." });
@@ -84,40 +89,62 @@ export async function signup(req, res) {
 //verify the email
 export async function verifyEmail(req, res) {
   try {
-    let { email , otp } = req.body || {};
+    const { email, otp } = req.body || {};
     if (!email || !otp) {
       return res.status(400).json({ message: "All fields are required!." });
     }
-    const pendingUser = await User.findOne({ email })
+    const pendingUser = await User.findOne({ email });
     //checks if email exist
     if (!pendingUser) {
-      return res.status(404).json({ message: "Email Not Found!. Please Login or Signup first before proceeding." })
+      return res
+        .status(404)
+        .json({
+          message:
+            "Email Not Found!. Please Login or Signup first before proceeding.",
+        });
     }
+    //check if the user email is already verified
+    if (pendingUser.isEmailVerified) return res.status(409).json({message: "Email is already verified. Proceed to login."})
     //compare otp to hashed otp
-    const isOTPMatched = await pendingUser.compareOTP(otp)
+    const isOTPMatched = await pendingUser.compareOTP(otp);
     //check if otp matched
-    if (!isOTPMatched) return res.status(401).json({message: "Invalid OTP."})
+    if (!isOTPMatched) return res.status(401).json({ message: "Invalid OTP." });
 
     //check if otp is not expired
     if (pendingUser.otpExpires === Date.now()) {
       pendingUser.otp = null;
-      pendingUser.otpExpires = null
-      await pendingUser.save()
-      return res.status(410).json({message: "OTP expired. Please request again."})
+      pendingUser.otpExpires = null;
+      await pendingUser.save();
+      return res
+        .status(410)
+        .json({ message: "OTP expired. Please request again." });
     }
     //otp matched
     pendingUser.isEmailVerified = true;
     pendingUser.otp = null;
     pendingUser.otpExpires = null;
-    await pendingUser.save()
+    await pendingUser.save();
 
     const token = signToken(pendingUser);
     const userSafe = pendingUser.toObject();
     delete userSafe.password;
     return res.status(201).json({ token, user: userSafe });
+  } catch (error) {
+    console.log("Error in verifying email", error);
+    res.status(500).json({ message: "Server Error." });
+  }
+}
+
+export async function resendOTP(req, res) {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({message: "All fields are required!."})
+
+    const user = User.findOne({email}).select("+password")
+    
 
   } catch (error) {
-    console.log("Error in verifying email", error)
-    res.status(500).json({message: "Server Error"})
+    console.log("Error in Resending OTP", error)
+    res.status(500).json({message: "Server Error."})
   }
 }
