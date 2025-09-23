@@ -1,3 +1,5 @@
+import validator from 'validator'
+
 import User from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
 import { sendEmailOTP } from "../utils/sendEmailOTP.js";
@@ -56,6 +58,9 @@ export async function signup(req, res) {
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required!." });
     }
+    const isEmail = validator.isEmail(email);
+    
+    if (!isEmail) return res.status(401).json({ message: "Invalid email address." });
 
     email = String(email).trim().toLowerCase();
     firstName = String(firstName).trim();
