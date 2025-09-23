@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
 import { sendEmailOTP } from "../utils/sendEmailOTP.js";
 
+//Display all users
 export async function getAllUsers(req, res) {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -12,6 +13,7 @@ export async function getAllUsers(req, res) {
   }
 }
 
+//user login
 export async function login(req, res) {
   try {
     const { email, password } = req.body || {};
@@ -23,6 +25,7 @@ export async function login(req, res) {
     
     const user = await User.findOne({ email }).select("+password");
 
+    //checks if user is verified
     if (!user.isEmailVerified) {
       return res
         .status(401)
@@ -45,8 +48,9 @@ export async function login(req, res) {
   }
 }
 
+//signup
 export async function signup(req, res) {
-  try {
+  try {//check for empty fields
     let { email, password, firstName, lastName } = req.body || {};
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required!." });
@@ -63,13 +67,11 @@ export async function signup(req, res) {
 
     const newUser = new User({ email, password, firstName, lastName });
     await newUser.save();
+    //send OTP to user email
     sendEmailOTP(newUser)
 
-    res.status(200).json({ message: "OTP sent to your email. Please verify." });
-    // const token = signToken(newUser);
-    // const userSafe = newUser.toObject();
-    // delete userSafe.password;
-    // return res.status(201).json({ token, user: userSafe });
+    res.status(200).json({ message: "OTP sent to your email. Please verify first before logging in." });
+
   } catch (error) {
     if (error?.code === 11000) {
       return res.status(409).json({ message: "Email is already in use." });
@@ -79,6 +81,43 @@ export async function signup(req, res) {
   }
 }
 
-export async function verifyEmail() {
-  
+//verify the email
+export async function verifyEmail(req, res) {
+  try {
+    let { email , otp } = req.body || {};
+    if (!email || !otp) {
+      return res.status(400).json({ message: "All fields are required!." });
+    }
+    const pendingUser = await User.findOne({ email })
+    //checks if email exist
+    if (!pendingUser) {
+      return res.status(404).json({ message: "Email Not Found!. Please Login or Signup first before proceeding." })
+    }
+    //compare otp to hashed otp
+    const isOTPMatched = await pendingUser.compareOTP(otp)
+    //check if otp matched
+    if (!isOTPMatched) return res.status(401).json({message: "Invalid OTP."})
+
+    //check if otp is not expired
+    if (pendingUser.otpExpires === Date.now()) {
+      pendingUser.otp = null;
+      pendingUser.otpExpires = null
+      await pendingUser.save()
+      return res.status(410).json({message: "OTP expired. Please request again."})
+    }
+    //otp matched
+    pendingUser.isEmailVerified = true;
+    pendingUser.otp = null;
+    pendingUser.otpExpires = null;
+    await pendingUser.save()
+
+    const token = signToken(pendingUser);
+    const userSafe = pendingUser.toObject();
+    delete userSafe.password;
+    return res.status(201).json({ token, user: userSafe });
+
+  } catch (error) {
+    console.log("Error in verifying email", error)
+    res.status(500).json({message: "Server Error"})
+  }
 }
