@@ -25,14 +25,14 @@ export async function login(req, res) {
 
     const user = await User.findOne({ email }).select("+password");
 
+    //check if user existing
+    if (!user) return res.status(401).json({ message: "Invalid credentials." });
+
     //checks if user is verified
-    if (!user.isEmailVerified) {
+    if (!user.isEmailVerified)
       return res
         .status(401)
         .json({ message: "Please verify your email before logging in." });
-    }
-
-    if (!user) return res.status(401).json({ message: "Invalid credentials." });
 
     const ok = await user.comparePassword(password);
     if (!ok) return res.status(401).json({ message: "Invalid credentials." });
@@ -71,12 +71,9 @@ export async function signup(req, res) {
     //send OTP to user email
     sendEmailOTP(newUser);
 
-    res
-      .status(200)
-      .json({
-        message:
-          "OTP sent to your email. Please verify first before logging in.",
-      });
+    res.status(200).json({
+      message: "OTP sent to your email. Please verify first before logging in.",
+    });
   } catch (error) {
     if (error?.code === 11000) {
       return res.status(409).json({ message: "Email is already in use." });
@@ -96,24 +93,25 @@ export async function verifyEmail(req, res) {
     const pendingUser = await User.findOne({ email });
     //checks if email exist
     if (!pendingUser) {
-      return res
-        .status(404)
-        .json({
-          message:
-            "Email Not Found!. Please Login or Signup first before proceeding.",
-        });
+      return res.status(404).json({
+        message:
+          "Email Not Found!. Please Login or Signup first before proceeding.",
+      });
     }
     //check if the user email is already verified
-    if (pendingUser.isEmailVerified) return res.status(409).json({message: "Email is already verified. Proceed to login."})
+    if (pendingUser.isEmailVerified)
+      return res
+        .status(409)
+        .json({ message: "Email is already verified. Proceed to login." });
     //compare otp to hashed otp
-    const isOTPMatched = await pendingUser.compareOTP(otp);
+    const isOTPMatch = await pendingUser.compareOTP(otp);
     //check if otp matched
-    if (!isOTPMatched) return res.status(401).json({ message: "Invalid OTP." });
+    if (!isOTPMatch) return res.status(401).json({ message: "Invalid OTP." });
 
     //check if otp is not expired
-    if (pendingUser.otpExpires === Date.now()) {
-      pendingUser.otp = null;
-      pendingUser.otpExpires = null;
+    if (pendingUser.otpExpiresAt === Date.now()) {
+      pendingUser.otp = undefined;
+      pendingUser.otpExpiresAt = undefined;
       await pendingUser.save();
       return res
         .status(410)
@@ -121,8 +119,8 @@ export async function verifyEmail(req, res) {
     }
     //otp matched
     pendingUser.isEmailVerified = true;
-    pendingUser.otp = null;
-    pendingUser.otpExpires = null;
+    pendingUser.otp = undefined;
+    pendingUser.otpExpiresAt = undefined;
     await pendingUser.save();
 
     const token = signToken(pendingUser);
@@ -138,13 +136,31 @@ export async function verifyEmail(req, res) {
 export async function resendOTP(req, res) {
   try {
     const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({message: "All fields are required!."})
+    if (!email || !password)
+      return res.status(400).json({ message: "All fields are required!." });
 
-    const user = User.findOne({email}).select("+password")
-    
+    const user = await User.findOne({ email }).select("+password");
+    //check if user exist
+    if (!user) return res.status(404).json({ message: "Email Not Found!. Please Login or Signup first before proceeding." });
+    //check if user is already verified
+    if (user.isEmailVerified)
+      return res
+        .status(401)
+        .json({ message: "Already verified. Proceed to login." });
 
+    const isPasswordMatch = await user.comparePassword(password);//middleware: UserSchema method
+    //check if password match to email
+    if (!isPasswordMatch)
+      return res.status(401).json({ message: "Invalid credentials!." });
+
+    //resend email
+    sendEmailOTP(user);
+
+    res.status(200).json({
+      message: "OTP sent to your email. Please verify first before logging in.",
+    });
   } catch (error) {
-    console.log("Error in Resending OTP", error)
-    res.status(500).json({message: "Server Error."})
+    console.log("Error in Resending OTP", error);
+    res.status(500).json({ message: "Server Error." });
   }
 }
