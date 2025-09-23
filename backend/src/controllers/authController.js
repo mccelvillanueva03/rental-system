@@ -1,4 +1,4 @@
-import validator from 'validator'
+import validator from "validator";
 
 import User from "../models/User.js";
 import { signToken } from "../utils/jwt.js";
@@ -8,7 +8,7 @@ import { sendEmailOTP } from "../utils/sendEmailOTP.js";
 export async function getAllUsers(req, res) {
   try {
     const users = await User.find().sort({ createdAt: -1 });
-    res.status(200).json(users);
+    return res.status(200).json(users);
   } catch (error) {
     console.log("Error in getAllUsers controller:".error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -20,9 +20,7 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required." });
+      return res.status(400).json({ message: "All fields are required." });
     }
 
     const user = await User.findOne({ email }).select("+password");
@@ -32,9 +30,7 @@ export async function login(req, res) {
 
     //checks if user is verified
     if (!user.isEmailVerified)
-      return res
-        .status(401)
-        .json({ message: "Please verify your email before logging in." });
+      return res.status(401).json({ message: "Email is not verified." });
 
     const ok = await user.comparePassword(password);
     if (!ok) return res.status(401).json({ message: "Invalid credentials." });
@@ -59,8 +55,9 @@ export async function signup(req, res) {
       return res.status(400).json({ message: "All fields are required!." });
     }
     const isEmail = validator.isEmail(email);
-    
-    if (!isEmail) return res.status(401).json({ message: "Invalid email address." });
+    //check if email is correct format
+    if (!isEmail)
+      return res.status(401).json({ message: "Invalid email address." });
 
     email = String(email).trim().toLowerCase();
     firstName = String(firstName).trim();
@@ -70,15 +67,11 @@ export async function signup(req, res) {
     if (existingUser) {
       return res.status(409).json({ message: "Email is already in use." });
     }
-
     const newUser = new User({ email, password, firstName, lastName });
-    await newUser.save();
-    //send OTP to user email
-    sendEmailOTP(newUser);
 
-    res.status(200).json({
-      message: "OTP sent to your email. Please verify first before logging in.",
-    });
+    //send OTP to user email
+    const result = sendEmailOTP(newUser);
+    return res.status(200).json({ message: "OTP send successfully", ...result })
   } catch (error) {
     if (error?.code === 11000) {
       return res.status(409).json({ message: "Email is already in use." });
@@ -96,13 +89,13 @@ export async function verifyEmail(req, res) {
       return res.status(400).json({ message: "All fields are required!." });
     }
     const pendingUser = await User.findOne({ email });
+
     //checks if email exist
-    if (!pendingUser) {
+    if (!pendingUser)
       return res.status(404).json({
-        message:
-          "Email Not Found!. Please Login or Signup first before proceeding.",
+        message: "Email Not Found!.",
       });
-    }
+
     //check if the user email is already verified
     if (pendingUser.isEmailVerified)
       return res
@@ -122,15 +115,17 @@ export async function verifyEmail(req, res) {
         .status(410)
         .json({ message: "OTP expired. Please request again." });
     }
-    //otp matched
+    //otp matched, otp !expired
     pendingUser.isEmailVerified = true;
     pendingUser.otp = undefined;
     pendingUser.otpExpiresAt = undefined;
+
     await pendingUser.save();
 
     const token = signToken(pendingUser);
     const userSafe = pendingUser.toObject();
     delete userSafe.password;
+
     return res.status(201).json({ token, user: userSafe });
   } catch (error) {
     console.log("Error in verifying email", error);
@@ -138,6 +133,7 @@ export async function verifyEmail(req, res) {
   }
 }
 
+//resending otp
 export async function resendOTP(req, res) {
   try {
     const { email, password } = req.body || {};
@@ -146,26 +142,49 @@ export async function resendOTP(req, res) {
 
     const user = await User.findOne({ email }).select("+password");
     //check if user exist
-    if (!user) return res.status(404).json({ message: "Email Not Found!. Please Login or Signup first before proceeding." });
+    if (!user)
+      return res.status(404).json({
+        message: "Email Not Found!.",
+      });
     //check if user is already verified
     if (user.isEmailVerified)
       return res
         .status(401)
         .json({ message: "Already verified. Proceed to login." });
 
-    const isPasswordMatch = await user.comparePassword(password);//middleware: UserSchema method
-    //check if password match to email
+    const isPasswordMatch = await user.comparePassword(password); //middleware: UserSchema method
+    //check if password is match to email
     if (!isPasswordMatch)
       return res.status(401).json({ message: "Invalid credentials!." });
 
     //resend email
-    sendEmailOTP(user);
-
-    res.status(200).json({
-      message: "OTP sent to your email. Please verify first before logging in.",
-    });
+    const result = sendEmailOTP(user);
+    return res.status(200).json({message: "OTP send successfully", ...result})
   } catch (error) {
     console.log("Error in Resending OTP", error);
+    res.status(500).json({ message: "Server Error." });
+  }
+}
+
+export async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body || {};
+    if (!email)
+      return res.status(400).json({ message: "All fields are required!." });
+
+    const user = await User.findOne({ email });
+
+    //check if user exist
+    if (!user) return res.status(404).json({ message: "Email Not Found." });
+
+    //check if email is verified
+    if (!user.isEmailVerified)
+      return res.status(401).json({ message: "Email is not verified!" });
+
+    const result = sendEmailOTP(user);
+    return res.status(200).json({ message: "OTP send successfully.", ...result })
+  } catch (error) {
+    console.log("Error in Forgot Password.", error);
     res.status(500).json({ message: "Server Error." });
   }
 }
