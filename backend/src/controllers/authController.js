@@ -71,7 +71,9 @@ export async function signup(req, res) {
 
     //send OTP to user email
     const result = sendEmailOTP(newUser);
-    return res.status(200).json({ message: "OTP send successfully", ...result })
+    return res
+      .status(200)
+      .json({ message: "OTP send successfully", ...result });
   } catch (error) {
     if (error?.code === 11000) {
       return res.status(409).json({ message: "Email is already in use." });
@@ -107,7 +109,7 @@ export async function verifyEmail(req, res) {
     if (!isOTPMatch) return res.status(401).json({ message: "Invalid OTP." });
 
     //check if otp is not expired
-    if (pendingUser.otpExpiresAt === Date.now()) {
+    if (pendingUser.otpExpiresAt <= Date.now()) {
       pendingUser.otp = undefined;
       pendingUser.otpExpiresAt = undefined;
       await pendingUser.save();
@@ -159,7 +161,9 @@ export async function resendOTP(req, res) {
 
     //resend email
     const result = sendEmailOTP(user);
-    return res.status(200).json({message: "OTP send successfully", ...result})
+    return res
+      .status(200)
+      .json({ message: "OTP send successfully", ...result });
   } catch (error) {
     console.log("Error in Resending OTP", error);
     res.status(500).json({ message: "Server Error." });
@@ -182,9 +186,46 @@ export async function forgotPassword(req, res) {
       return res.status(401).json({ message: "Email is not verified!" });
 
     const result = sendEmailOTP(user);
-    return res.status(200).json({ message: "OTP send successfully.", ...result })
+    return res
+      .status(200)
+      .json({ message: "OTP send successfully.", ...result });
   } catch (error) {
     console.log("Error in Forgot Password.", error);
     res.status(500).json({ message: "Server Error." });
+  }
+}
+
+export async function verifyForgotPassword(req, res) {
+  try {
+    const { email, otp, newPassword } = req.body || {};
+    if (!email || !otp || !newPassword)
+      return res.status(400).json({ message: "All fields required." });
+
+    const user = await User.findOne({ email }).select("+password");
+    //check if email exist
+    if (!user) return res.status(404).json({ message: "Email Not Found." });
+
+    const isOtpMatch = await user.compareOTP(otp);
+    //check if otp is matched
+    if (!isOtpMatch) return res.status(401).json({ message: "Invalid OTP." });
+    //check otp if expired
+    if (user.otpExpiresAt <= Date.now())
+      return res
+        .status(410)
+        .json({ message: "OTP expired. Please request again." });
+
+    user.password = newPassword;
+    user.otp = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    const newToken = signToken(user);
+    const userSafe = user.toObject();
+    delete userSafe.password;
+
+    return res.status(200).json({ newToken, user: userSafe });
+  } catch (error) {
+    console.log("Error in verifying Forgot Password.", error);
+    return res.status(500).json({ message: "Server Error." });
   }
 }
