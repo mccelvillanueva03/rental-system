@@ -18,7 +18,7 @@ router.get("/users", getAllUsers);
 router.post(
   "/change-password",
   verifyToken,
-  authorizeRole("tenant", "host"),
+  authorizeRole("tenant", "host", "admin"),
   changePassword
 );
 //public routes
