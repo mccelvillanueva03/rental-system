@@ -8,6 +8,7 @@ import {
   signup,
   verifyEmail,
   verifyForgotPassword,
+  googleLogin,
 } from "../controllers/authController.js";
 import { authorizeRole, verifyToken } from "../middleware/verifyJwt.js";
 
@@ -28,5 +29,8 @@ router.post("/verify-email-otp", verifyEmail);
 router.post("/resend-email-otp", resendOTP);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-forgot-password", verifyForgotPassword);
+
+//Google OAuth
+router.post("/google-login", googleLogin);
 
 export default router;
