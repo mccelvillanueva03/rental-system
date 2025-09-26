@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: { type: Date },
     role: { type: String, default: "tenant" },
 
+    //User login with Google OAuth
+    googleId: { type: String },
+    isGoogleAccount: { type: Boolean, default: false },
+
     isEmailVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpiresAt: { type: Date },
