@@ -1,8 +1,10 @@
-import React from "react";
-import { cn } from "@/lib/utils"; // Ensure cn is exported from src/lib/utils.js
+import toast from "react-hot-toast";
+import React, { useState } from "react";
+import api from "../lib/axios.js";
+import { useNavigate } from "react-router";
+import { GoogleLogin } from "@react-oauth/google";
 
-// These imports require that you've added the shadcn/ui components:
-// npx shadcn-ui add card input label button
+//shadcn components
 import {
   Card,
   CardHeader,
@@ -10,18 +12,63 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const LogInForm = ({ className, onSubmit, ...props }) => {
-  const handleSubmit = (e) => {
+const LogInForm = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onSubmit) onSubmit(new FormData(e.target));
+    if (!email || !password) {
+      toast.error("All fields are required.");
+      return;
+    }
+
+    try {
+      await api.post("/auth/login", { email, password });
+      toast.success("Login successful!");
+      navigate("/");
+    } catch (error) {
+      if (error.response.status === 429) {
+        toast.error("Too many login attempts. Please try again later.");
+        return;
+      }
+      toast.error("Incorrect Email or Password.");
+    }
   };
 
+  async function handleGoogleSuccess(credentialResponse) {
+    try {
+      if (!credentialResponse?.credential) {
+        toast.error("Missing Google credential");
+        return;
+      }
+      const res = await api.post(
+        "/auth/google-login",
+        { token: credentialResponse.credential },
+        { withCredentials: true }
+      );
+      // If still using token in body:
+      if (res.data.token) localStorage.setItem("token", res.data.token);
+      toast.success("Google login successful!");
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login failed.");
+    }
+  }
+
+  function handleGoogleError() {
+    toast.error("Google login failed.");
+  }
+
   return (
-    <div className={cn("flex flex-col gap-6 ", className)} {...props}>
+    <div className={cn("flex flex-col gap-6 ")}>
       <Card className="p-5 m-auto mt-50 w-md">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
@@ -37,8 +84,9 @@ const LogInForm = ({ className, onSubmit, ...props }) => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="m@example.com"
-                required
+                placeholder="Enter Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -52,24 +100,28 @@ const LogInForm = ({ className, onSubmit, ...props }) => {
                   Forgot your password?
                 </a>
               </div>
-              <Input id="password" name="password" type="password" required />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             <div className="flex flex-col gap-3">
               <Button type="submit" className="w-full">
                 Login
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  // Hook up Google login here
-                  console.log("Google login clicked");
-                }}
-              >
-                Login with Google
-              </Button>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="outline"
+                shape="rectangular"
+                size="large"
+                text="signin_with"
+              />
             </div>
 
             <div className="pt-2 text-sm text-center">

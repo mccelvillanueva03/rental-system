@@ -1,4 +1,4 @@
-import { ipRateLimiter, userRateLimiter } from "../controllers/upstash.js";
+import { ipRateLimiter, userRateLimiter } from "../config/upstash.js";
 
 const rateLimiter = async (req, res, next) => {
   try {

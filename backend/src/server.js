@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 
 import authRouter from "./routes/authRoutes.js";
 import { connectDB } from "./config/db.js";
@@ -11,9 +12,10 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-if (!process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV !== "production") {
   app.use(cors({
     origin: 'http://localhost:5173', //frontend URL
+    credentials: true,
   }))
 }
 
