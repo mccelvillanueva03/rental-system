@@ -9,8 +9,7 @@ import { passwordChanged } from "../middleware/passwordChangedAt.js";
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: { type: String, trim: true },
-    lastName: { type: String, trim: true },
+    fullName: { type: String, trim: true },
     email: {
       type: String,
       required: true,

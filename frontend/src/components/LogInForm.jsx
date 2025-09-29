@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import api from "../lib/axios.js";
 import { useNavigate } from "react-router";
 import { GoogleLogin } from "@react-oauth/google";
+import { cn } from "@/lib/utils.js";
 
 //shadcn components
 import {
@@ -12,7 +13,6 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -63,16 +63,12 @@ const LogInForm = () => {
     }
   }
 
-  function handleGoogleError() {
-    toast.error("Google login failed.");
-  }
-
   return (
-    <div className={cn("flex flex-col gap-6 ")}>
+    <div className="flex flex-col gap-6 ">
       <Card className="p-5 m-auto mt-50 w-md">
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
+          <CardTitle className={cn("text-center")}>Login to your account</CardTitle>
+          <CardDescription className={cn("text-center")}>
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
@@ -110,25 +106,23 @@ const LogInForm = () => {
               />
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 items-center">
               <Button type="submit" className="w-full">
                 Login
               </Button>
-              <div className="flex items-center justify-center gap-2 w-full">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  theme="outline"
-                  shape="rectangular"
-                  size="large"
-                  text="signin_with"
-                />
-              </div>
+              <p className="text-sm text-gray-500">or</p>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                theme="outline"
+                shape="rectangular"
+                size="medium"
+                text="signin_with"
+              />
             </div>
 
             <div className="pt-2 text-sm text-center">
-              Don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
+              Don't have an account?{" "}
+              <a href="#" className="underline underline-offset-4 text-green-500">
                 Sign up
               </a>
             </div>

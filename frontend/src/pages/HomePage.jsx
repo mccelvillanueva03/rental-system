@@ -1,10 +1,10 @@
 import React from "react";
-import LogInForm from "../components/LogInForm.jsx";
+import SignupForm from "@/components/SignupForm.jsx";
 
 const HomePage = () => {
   return (
     <div>
-      <LogInForm />
+      <SignupForm />
     </div>
   );
 };

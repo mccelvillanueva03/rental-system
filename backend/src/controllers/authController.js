@@ -51,8 +51,8 @@ export async function login(req, res) {
 export async function signup(req, res) {
   try {
     //check for empty fields
-    let { email, password, firstName, lastName } = req.body || {};
-    if (!email || !password || !firstName || !lastName) {
+    let { email, password, fullName } = req.body || {};
+    if (!email || !password || !fullName) {
       return res.status(400).json({ message: "All fields are required!." });
     }
     const isEmail = validator.isEmail(email);
@@ -61,14 +61,13 @@ export async function signup(req, res) {
       return res.status(401).json({ message: "Invalid email address." });
 
     email = String(email).trim().toLowerCase();
-    firstName = String(firstName).trim();
-    lastName = String(lastName).trim();
+    fullName = String(fullName).trim();
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email is already in use." });
     }
-    const newUser = new User({ email, password, firstName, lastName });
+    const newUser = new User({ email, password, fullName });
 
     //send OTP to user email
     const result = sendEmailOTP(newUser);
@@ -109,7 +108,7 @@ export async function verifyEmail(req, res) {
     //check if otp matched
     if (!isOTPMatch) return res.status(401).json({ message: "Invalid OTP." });
 
-    //check if otp is not expired
+    //check if otp is expired
     if (pendingUser.otpExpiresAt <= Date.now()) {
       pendingUser.otp = undefined;
       pendingUser.otpExpiresAt = undefined;
@@ -283,6 +282,10 @@ export async function googleLogin(req, res) {
     //extract user info from verified token
     const { email, given_name, family_name, sub } = ticket.getPayload();
 
+    const first = (given_name || "").trim();
+    const last = (family_name || "").trim();
+    const fullName = [first, last].filter(Boolean).join(" ");
+
     let user = await User.findOne({ email });
 
     if (user) {
@@ -290,12 +293,11 @@ export async function googleLogin(req, res) {
         user.googleId = sub;
         user.isGoogleAccount = true;
         await user.save();
-      }     
-    }else {
+      }
+    } else {
       user = new User({
         email,
-        firstName: given_name,
-        lastName: family_name,
+        fullName: fullName,
         googleId: sub,
         isGoogleAccount: true,
         isEmailVerified: true,
