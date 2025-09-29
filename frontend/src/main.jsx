@@ -11,6 +11,12 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
+        {console.log(
+          "Origin check:",
+          window.location.origin,
+          import.meta.env.VITE_GOOGLE_CLIENT_ID
+        )}
+        ;
         <App />
         <Toaster />
       </BrowserRouter>

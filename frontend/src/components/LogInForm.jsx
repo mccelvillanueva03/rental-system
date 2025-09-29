@@ -114,14 +114,16 @@ const LogInForm = () => {
               <Button type="submit" className="w-full">
                 Login
               </Button>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                theme="outline"
-                shape="rectangular"
-                size="large"
-                text="signin_with"
-              />
+              <div className="flex items-center justify-center gap-2 w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  shape="rectangular"
+                  size="large"
+                  text="signin_with"
+                />
+              </div>
             </div>
 
             <div className="pt-2 text-sm text-center">
