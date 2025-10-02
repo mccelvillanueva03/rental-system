@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const LogInForm = () => {
+const LogInForm = ({ onSignupClick, onSuccessLogin }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,8 +30,12 @@ const LogInForm = () => {
     }
 
     try {
-      await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", { email, password });
       toast.success("Login successful!");
+      if (res.data.token) localStorage.setItem("token", res.data.token);
+      if (res.data.token) {
+        onSuccessLogin(res.data.user)
+      } 
       navigate("/");
     } catch (error) {
       if (error.response.status === 429) {
@@ -55,7 +59,10 @@ const LogInForm = () => {
       );
       // If still using token in body:
       if (res.data.token) localStorage.setItem("token", res.data.token);
-      toast.success("Google login successful!");
+       if (res.data.token) {
+         onSuccessLogin(res.data.user);
+       } 
+      toast.success("Google Login Success!");
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -65,9 +72,11 @@ const LogInForm = () => {
 
   return (
     <div className="flex flex-col gap-6 ">
-      <Card className="p-5 m-auto mt-50 w-md">
+      <Card className="p-5 m-auto w-md">
         <CardHeader>
-          <CardTitle className={cn("text-center")}>Login to your account</CardTitle>
+          <CardTitle className={cn("text-center")}>
+            Login to your account
+          </CardTitle>
           <CardDescription className={cn("text-center")}>
             Enter your email below to login to your account
           </CardDescription>
@@ -111,22 +120,23 @@ const LogInForm = () => {
                 Login
               </Button>
               <p className="text-sm text-gray-500">or</p>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                theme="outline"
-                shape="rectangular"
-                size="medium"
-                text="signin_with"
-              />
-            </div>
-
-            <div className="pt-2 text-sm text-center">
-              Don't have an account?{" "}
-              <a href="#" className="underline underline-offset-4 text-green-500">
-                Sign up
-              </a>
+              <div>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  theme="outline"
+                  shape="rectangular"
+                  size="medium"
+                  text="continue_with"
+                />
+              </div>
             </div>
           </form>
+          <div className="pt-2 text-sm text-center">
+            Don't have an account?
+            <Button onClick={onSignupClick} variant="link">
+              Signup
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
