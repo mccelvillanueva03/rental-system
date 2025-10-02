@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { GoogleLogin } from "@react-oauth/google";
 import api from "../lib/axios";
 //shadcn components
 import {
@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const SignupForm = () => {
+const SignupForm = ({ onLoginClick }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,24 +28,24 @@ const SignupForm = () => {
       toast.error("All fields required.");
       return;
     }
-
-
-
     try {
       await api.post("/auth/signup", { email, password, fullName });
       toast.success("OTP already sent to your email.");
-      navigate("/");
+      localStorage.setItem("pendingEmail", email);
+      setEmail("");
+      setPassword("");
+      setFullName("");
     } catch (error) {
-        const status = error?.response?.status;
+      const status = error?.response?.status;
       if (status === 429) {
         toast.error("Too many login attempts. Please try again later.");
         return;
       }
       if (status === 409) {
-        toast.error("Email is already in use.")
-        return
-      } 
-        toast.error("Signing up failed.");
+        toast.error("Email is already in use.");
+        return;
+      }
+      toast.error("Signing up failed.");
     }
   };
 
@@ -70,10 +70,14 @@ const SignupForm = () => {
     }
   }
 
+  async function handleGoogleError() {
+    toast.error("Google Login Failed");
+  }
+
   return (
     <div>
-      <div className="flex flex-col gap-6 ">
-        <Card className="p-5 m-auto mt-50 w-md">
+      <div className="flex flex-col gap-6">
+        <Card className="p-5 m-auto w-md">
           <CardHeader>
             <CardTitle className={cn("text-center")}>Create account</CardTitle>
             <CardDescription className={cn("text-center")}>
@@ -123,29 +127,26 @@ const SignupForm = () => {
               </div>
 
               <div className="flex flex-col gap-3 items-center">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className={cn("w-full")}>
                   Sign Up
                 </Button>
                 <p className="text-sm text-gray-500">or</p>
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
                   theme="outline"
                   shape="rectangular"
                   size="medium"
                   text="signup_with"
                 />
               </div>
-
-              <div className="pt-2 text-sm text-center">
-                Already have an account?{" "}
-                <a
-                  href="#"
-                  className="underline underline-offset-4 text-green-500"
-                >
-                  Login
-                </a>
-              </div>
             </form>
+            <div className="pt-2 text-sm text-center">
+              Already have an account?
+              <Button onClick={onLoginClick} variant="link">
+                Login
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
