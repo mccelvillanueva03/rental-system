@@ -1,10 +1,10 @@
 import React from "react";
-import SignupForm from "@/components/SignupForm.jsx";
+import NavBar from "../components/NavBar";
 
 const HomePage = () => {
   return (
     <div>
-      <SignupForm />
+      <NavBar />
     </div>
   );
 };
