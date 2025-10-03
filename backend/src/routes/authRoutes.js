@@ -1,16 +1,14 @@
 import express from "express";
-import {
-  changePassword,
-  forgotPassword,
-  getAllUsers,
-  login,
-  resendOTP,
-  signup,
-  verifyEmail,
-  verifyForgotPassword,
-  googleLogin,
-} from "../controllers/authController.js";
 import { authorizeRole, verifyToken } from "../middleware/verifyJwt.js";
+import googleLogin from "../controllers/authentication/googleLogin.js";
+import changePassword from "../controllers/authentication/changePassword.js";
+import forgotPassword from "../controllers/authentication/forgotPassword.js";
+import resendOTP from "../controllers/authentication/resendOtp.js";
+import verifyEmail from "../controllers/authentication/verifyEmail.js";
+import login from "../controllers/authentication/login.js";
+import signup from "../controllers/authentication/signup.js";
+import verifyForgotPassword from '../controllers/authentication/verifyForgotPassword.js';
+import getAllUsers from "../controllers/authentication/getAllUsers.js";
 
 const router = express.Router();
 
