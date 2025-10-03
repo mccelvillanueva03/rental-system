@@ -10,10 +10,10 @@ export async function verifyToken(req, res, next) {
 
     const token = authHeaders.split(" ")[1];
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    //Verify with ACCESS secret
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
     const user = await User.findById(decoded.id);
-
     if (!user) return res.status(404).json({ message: "User Not Found." });
 
     //check if user changed password after token was issued
@@ -30,8 +30,14 @@ export async function verifyToken(req, res, next) {
     req.user = user;
     next();
   } catch (error) {
-    console.log("Error in verifying token", error);
-    res.status(500).json({ message: "Server Error." });
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Access token expired." });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token." });
+    }
+    console.log("Error in verifying token:", error);
+    return res.status(500).json({ message: "Server Error." });
   }
 }
 
