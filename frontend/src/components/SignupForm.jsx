@@ -137,11 +137,11 @@ const SignupForm = ({ onLoginClick }) => {
                   theme="outline"
                   shape="rectangular"
                   size="medium"
-                  text="signup_with"
+                  text="continue_with"
                 />
               </div>
             </form>
-            <div className="pt-2 text-sm text-center">
+            <div className="pt-5 text-sm text-center">
               Already have an account?
               <Button onClick={onLoginClick} variant="link">
                 Login

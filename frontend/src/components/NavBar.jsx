@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import LogInForm from "@/components/LogInForm";
 import SignupForm from "./SignupForm";
@@ -26,24 +26,54 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ArrowDown,
+  ArrowDownRight,
+  ArrowRight,
+  Bell,
+  Heart,
+  HelpCircle,
+  MessageSquare,
+  Plane,
+  Settings,
+  User,
+  UserCircle2,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const NavBar = () => {
   const [user, setUser] = useState(null);
+  const [signup, setSignup] = useState("false")
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState("login"); // 'login' or 'signup'
 
   const handleOpenSignup = () => setForm("signup");
   const handleOpenLogin = () => setForm("login");
 
+  useEffect(()=>{
+    const token = localStorage.getItem("token")
+    if (!token) {
+      setUser(null)
+      return
+    }
+  }, [])
+
+  const handleLogout = () => {
+    setUser("null");
+    localStorage.removeItem("token");
+  };
+
   return (
     <div className="w-full flex justify-between items-center p-6 border-b bg-secondary">
       <div className="font-bold text-lg">Logo</div>
       {!user ? (
-        //No user
+        //No user / user logged out
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size={"lg"} className="font-bold">
               Rent Now
+              <ArrowRight />
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-transparent shadow-none border-none p-0">
@@ -69,55 +99,45 @@ const NavBar = () => {
         //User Logged In
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"}>Account</Button>
+            <Button>Profile</Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className={"w-xs"} align="start">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                Profile
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Billing
-                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Settings
-                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Keyboard shortcuts
-                <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem>Email</DropdownMenuItem>
-                    <DropdownMenuItem>Message</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>More...</DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-              <DropdownMenuItem>
-                New Team
-                <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>GitHub</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
-            <DropdownMenuItem disabled>API</DropdownMenuItem>
+          <DropdownMenuContent className={"w-2xs"} align="start">
+            <DropdownMenuItem>
+              <Heart />
+              Wishlists
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Plane /> Trips
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <MessageSquare />
+              Messages
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <UserCircle2 />
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              Log out
-              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+              <Bell />
+              Notifications
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings />
+              Account Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <HelpCircle />
+              Help Center
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Button
+                variant={"ghost hover:bg-transparent"}
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

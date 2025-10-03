@@ -131,7 +131,7 @@ const LogInForm = ({ onSignupClick, onSuccessLogin }) => {
               </div>
             </div>
           </form>
-          <div className="pt-2 text-sm text-center">
+          <div className="pt-5 text-sm text-center">
             Don't have an account?
             <Button onClick={onSignupClick} variant="link">
               Signup
