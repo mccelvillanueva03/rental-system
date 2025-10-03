@@ -9,6 +9,7 @@ import { passwordChanged } from "../middleware/passwordChangedAt.js";
 
 const userSchema = new mongoose.Schema(
   {
+    refreshToken: {type: String, select: false},
     fullName: { type: String, trim: true },
     email: {
       type: String,
