@@ -14,11 +14,6 @@ async function hashUserData(next) {
     const saltOtp = await bcrypt.genSalt(10);
     this.otp = await bcrypt.hash(this.otp, saltOtp);
   }
-  //refreshToken is modified, hash it before saving
-  if (this.isModified("refreshToken") && this.refreshToken) {
-    const saltRefreshToken = await bcrypt.genSalt(10);
-    this.refreshToken = await bcrypt.hash(this.refreshToken, saltRefreshToken);
-  }
 
   next();
 }

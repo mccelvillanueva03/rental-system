@@ -6,8 +6,8 @@ import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
 async function signup(req, res) {
   try {
     //check for empty fields
-    let { email, password, fullName } = req.body || {};
-    if (!email || !password || !fullName) {
+    let { email, password, firstName, lastName } = req.body || {};
+    if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required!." });
     }
     const isEmail = validator.isEmail(email);
@@ -16,13 +16,14 @@ async function signup(req, res) {
       return res.status(401).json({ message: "Invalid email address." });
 
     email = String(email).trim().toLowerCase();
-    fullName = String(fullName).trim();
+    firstName = String(firstName).trim();
+    lastName = String(lastName).trim();
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email is already in use." });
     }
-    const newUser = new User({ email, password, fullName });
+    const newUser = new User({ email, password, firstName, lastName });
 
     //send OTP to user email
     const result = sendEmailOTP(newUser);
