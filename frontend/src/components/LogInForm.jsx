@@ -1,9 +1,8 @@
-import toast from "react-hot-toast";
-import React, { useState } from "react";
-import api from "../lib/axios.js";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import { GoogleLogin } from "@react-oauth/google";
 import { cn } from "@/lib/utils.js";
+import { AuthContext } from "../contexts/AuthContext.jsx";
 
 //shadcn components
 import {
@@ -16,63 +15,32 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
-const LogInForm = ({ onSignupClick, onSuccessLogin }) => {
+const LogInForm = ({ onSignupClick, onCloseClick }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login, googleLogin } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("All fields are required.");
-      return;
-    }
-
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      toast.success("Login successful!");
-      if (res.data.token) localStorage.setItem("token", res.data.token);
-      if (res.data.token) {
-        onSuccessLogin(res.data.user)
-      } 
-      navigate("/");
-    } catch (error) {
-      if (error.response.status === 429) {
-        toast.error("Too many login attempts. Please try again later.");
-        return;
-      }
-      toast.error("Incorrect Email or Password.");
-    }
+    login(email, password);
+    navigate("/");
   };
 
-  async function handleGoogleSuccess(credentialResponse) {
-    try {
-      if (!credentialResponse?.credential) {
-        toast.error("Missing Google credential");
-        return;
-      }
-      const res = await api.post(
-        "/auth/google-login",
-        { token: credentialResponse.credential },
-        { withCredentials: true }
-      );
-      // If still using token in body:
-      if (res.data.token) localStorage.setItem("token", res.data.token);
-       if (res.data.token) {
-         onSuccessLogin(res.data.user);
-       } 
-      toast.success("Google Login Success!");
-      navigate("/");
-    } catch (err) {
-      console.error(err);
-      toast.error("Google login failed.");
-    }
+  const handleGoogleLogin = async () => {
+    googleLogin()
   }
 
   return (
     <div className="flex flex-col gap-6 ">
       <Card className="p-5 m-auto w-md">
+        <div className="flex w-full justify-end">
+          <Button size={"icon"} variant={"ghost"} onClick={onCloseClick}>
+            <X />
+          </Button>
+        </div>
         <CardHeader>
           <CardTitle className={cn("text-center")}>
             Login to your account
@@ -86,6 +54,7 @@ const LogInForm = ({ onSignupClick, onSuccessLogin }) => {
             <div className="grid gap-3">
               <Label htmlFor="email">Email</Label>
               <Input
+                autoFocus
                 id="email"
                 name="email"
                 type="email"
@@ -122,7 +91,7 @@ const LogInForm = ({ onSignupClick, onSuccessLogin }) => {
               <p className="text-sm text-gray-500">or</p>
               <div>
                 <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
+                  onSuccess={handleGoogleLogin}
                   theme="outline"
                   shape="rectangular"
                   size="medium"
