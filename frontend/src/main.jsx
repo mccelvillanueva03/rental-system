@@ -6,13 +6,16 @@ import { Toaster } from "react-hot-toast";
 
 import "./index.css";
 import App from "./App.jsx";
+import { AuthProvider } from "./contexts/AuthContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
-        <App />
-        <Toaster />
+        <AuthProvider>
+          <App />
+          <Toaster />
+        </AuthProvider>
       </BrowserRouter>
     </GoogleOAuthProvider>
   </StrictMode>
