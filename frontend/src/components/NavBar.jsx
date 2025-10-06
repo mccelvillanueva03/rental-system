@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router";
 import LogInForm from "@/components/LogInForm";
 import SignupForm from "./SignupForm";
-
+import { AuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,53 +15,95 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ArrowDown,
-  ArrowDownRight,
   ArrowRight,
   Bell,
   Heart,
   HelpCircle,
+  LogOutIcon,
   MessageSquare,
   Plane,
   Settings,
-  User,
   UserCircle2,
 } from "lucide-react";
-import toast from "react-hot-toast";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import VerifyOtp from "./VerifyOtp";
 
 const NavBar = () => {
-  const [user, setUser] = useState(null);
-  const [signup, setSignup] = useState("false")
+  const navigate = useNavigate();
+  const { logout, user, cancelSignup } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState("login"); // 'login' or 'signup'
+  const [form, setForm] = useState("signup"); // 'login' or 'signup' or 'verify'
+
+  useEffect(() => {
+    if (!user) {
+      setOpen(false);
+      setForm("signup");
+    }
+  }, [user]);
+
+  const handleDialogChange = (isOpen) => {
+    if (!isOpen) {
+      setOpen(false);
+      setForm("login");
+      return;
+    }
+    setOpen(isOpen);
+  };
+
+  const handleCloseClick = () => {
+    setOpen(false);
+    setForm("signup");
+  };
+
+  const handleCancelSignup = () => {
+    cancelSignup();
+    setOpen(false);
+    setForm("signup");
+  };
 
   const handleOpenSignup = () => setForm("signup");
   const handleOpenLogin = () => setForm("login");
+  const handleOpenVerify = () => setForm("verify");
+  const handleSuccessVerify = () => setOpen(false);
 
-  useEffect(()=>{
-    const token = localStorage.getItem("token")
-    if (!token) {
-      setUser(null)
-      return
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    logout();
+    navigate("/");
+  };
+
+  const renderForm = () => {
+    switch (form) {
+      case "login":
+        return (
+          <LogInForm
+            onSignupClick={handleOpenSignup}
+            onCloseClick={handleCloseClick}
+          />
+        );
+      case "signup":
+        return (
+          <SignupForm
+            onLoginClick={handleOpenLogin}
+            setVerifyOpen={handleOpenVerify}
+            onCloseClick={handleCloseClick}
+            onGoogleLogin={user}
+          />
+        );
+      case "verify":
+        return (
+          <VerifyOtp
+            onCloseClick={handleCancelSignup}
+            onSetLogin={handleSuccessVerify}
+          />
+        );
+      default:
+        break;
     }
-  }, [])
-
-  const handleLogout = () => {
-    setUser("null");
-    localStorage.removeItem("token");
   };
 
   return (
@@ -69,14 +111,19 @@ const NavBar = () => {
       <div className="font-bold text-lg">Logo</div>
       {!user ? (
         //No user / user logged out
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button size={"lg"} className="font-bold">
               Rent Now
               <ArrowRight />
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-transparent shadow-none border-none p-0">
+          <DialogContent
+            className="bg-transparent shadow-none border-none p-0 [&>button]:hidden"
+            onInteractOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+          >
+            {/* For screen readers */}
             <DialogHeader className={"sr-only"}>
               <DialogTitle>
                 {form === "login" ? "Login Form" : "Signup Form"}
@@ -85,14 +132,7 @@ const NavBar = () => {
                 {form === "login" ? "Login Form" : "Signup Form"}
               </DialogDescription>
             </DialogHeader>
-            {form === "login" ? (
-              <LogInForm
-                onSignupClick={handleOpenSignup}
-                onSuccessLogin={setUser}
-              />
-            ) : (
-              <SignupForm onLoginClick={handleOpenLogin} />
-            )}
+            {renderForm()}
           </DialogContent>
         </Dialog>
       ) : (
@@ -131,13 +171,9 @@ const NavBar = () => {
               Help Center
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Button
-                variant={"ghost hover:bg-transparent"}
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOutIcon />
+              Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
