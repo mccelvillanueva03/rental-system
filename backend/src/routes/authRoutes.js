@@ -11,18 +11,13 @@ import verifyForgotPassword from "../controllers/authentication/verifyForgotPass
 import getAllUsers from "../controllers/authentication/getAllUsers.js";
 import { refreshToken } from "../controllers/authentication/refreshToken.js";
 import logout from "../controllers/authentication/logout.js";
+import cancelVerifyEmail from "../controllers/authentication/cancelVerifyEmail.js";
 
 const router = express.Router();
 //for checking all users - admin only
 router.get("/users", getAllUsers);
 
 //protected routes
-router.post(
-  "/refreshToken",
-  verifyToken,
-  authorizeRole("tenant", "host", "admin"),
-  refreshToken
-);
 router.post(
   "/change-password",
   verifyToken,
@@ -36,9 +31,11 @@ router.post(
   logout
 );
 //public routes
+router.post("/refreshToken", refreshToken);
 router.post("/login", login);
 router.post("/signup", signup);
 router.post("/verify-signup-email", verifyEmail);
+router.post("/cancel-signup", cancelVerifyEmail);
 router.post("/resend-signup-otp", resendOTP);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-forgot-password", verifyForgotPassword);

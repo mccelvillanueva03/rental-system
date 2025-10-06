@@ -20,7 +20,6 @@ async function googleLogin(req, res) {
     const { email, given_name, family_name, sub } = ticket.getPayload();
 
     let user = await User.findOne({ email });
-    const { accessToken, refreshToken, refreshTokenExpiresAt } = signToken(user);
 
     if (user) {
       if (!user.googleId) {
@@ -42,10 +41,12 @@ async function googleLogin(req, res) {
       });
       await user.save();
     }
+    const { accessToken, refreshToken, refreshTokenExpiresAt } =
+      signToken(user);
     const userSafe = user.toObject();
     delete userSafe.password;
     delete userSafe.refreshToken;
-    delete userSafe.refreshTokenExpiresAt
+    delete userSafe.refreshTokenExpiresAt;
 
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)

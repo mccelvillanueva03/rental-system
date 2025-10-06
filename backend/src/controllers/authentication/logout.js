@@ -1,11 +1,12 @@
-import { cookieOptions } from "./refreshToken.js";
 import User from "../../models/User.js";
 
 async function logout(req, res) {
   try {
     const refreshToken = req.cookies.refreshToken;
+    console.log("Cookies sent:", req.cookies);
+    
     if (!refreshToken) {
-      return res.status(400).json({ message: "No refresh token provided." });
+      return res.status(200).json({ message: "No active Session." });
     }
     const user = await User.findOne({ refreshToken }).select("+refreshToken");
     if (!user) {
@@ -16,9 +17,13 @@ async function logout(req, res) {
     user.refreshTokenExpiresAt = undefined;
     await user.save();
     //clear cookie from client side
-
     return res
-      .clearCookie("refreshToken", cookieOptions)
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // false in dev
+        sameSite: "lax",
+        path: "/",
+      })
       .status(200)
       .json({ message: "Logged out successfully." });
   } catch (error) {

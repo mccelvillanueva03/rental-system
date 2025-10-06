@@ -1,4 +1,3 @@
-import { del } from "flat-cache/src/del.js";
 import User from "../../models/User.js";
 import { signToken } from "../../utils/signToken.js";
 import { cookieOptions } from "./refreshToken.js";

@@ -31,7 +31,7 @@ async function signup(req, res) {
       .status(200)
       .json({ message: "OTP send successfully", ...result });
   } catch (error) {
-    if (error?.code === 11000) {
+    if (error?.code === 409) {
       return res.status(409).json({ message: "Email is already in use." });
     }
     console.error("Signup error:", error);

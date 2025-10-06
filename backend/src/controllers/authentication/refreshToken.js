@@ -18,15 +18,15 @@ export async function refreshToken(req, res) {
       return res.status(401).json({ message: "No refresh token provided." });
     }
     // Find user by refresh token
-    const user = await User.findOne({ refreshToken }).select(
-      "+refreshToken +refreshTokenExpiresAt"
-    );
+    const user = await User.findOne({ refreshToken }).select("+refreshToken");
     if (!user) return res.status(404).json({ message: "User Not Found." });
 
-    //compare refreshToken to user db hashed refreshToken
+    //compare refreshToken to user db refreshToken
     if (!user.refreshToken || user.refreshToken !== refreshToken) {
       return res.status(403).json({ message: "Invalid Token" });
     }
+    user.select("+refreshTokenExpiresAt");
+    // Check if refresh token is expired
     if (user.refreshTokenExpiresAt <= Date.now()) {
       user.refreshToken = null;
       user.refreshTokenExpiresAt = null;
@@ -36,8 +36,11 @@ export async function refreshToken(req, res) {
         .json({ message: "Refresh Token expired. Please login again." });
     }
 
-    const { accessToken, newRefreshToken, refreshTokenExpiresAt } =
-      signToken(user);
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      refreshTokenExpiresAt,
+    } = signToken(user);
     user.refreshToken = newRefreshToken;
     user.refreshTokenExpiresAt = refreshTokenExpiresAt;
     await user.save();
