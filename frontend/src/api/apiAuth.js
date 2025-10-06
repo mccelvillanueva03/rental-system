@@ -16,7 +16,8 @@ export const authInterceptors = (store) => {
   apiAuth.interceptors.request.use(
     (config) => {
       const token = store?.accessToken;
-      if (token) config.headers.Authorization = `Bearer ${token}`;
+      if (token && !config._retry)
+        config.headers.Authorization = `Bearer ${token}`;
       return config;
     },
     (error) => Promise.reject(error)
@@ -44,6 +45,7 @@ export const refreshInterceptors = (store) => {
         } catch (error) {
           console.log("Token refresh failed:", error);
           store.logout();
+          return Promise.reject(error);
         }
       }
       return Promise.reject(error);
