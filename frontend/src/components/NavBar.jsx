@@ -31,10 +31,11 @@ import {
   UserCircle2,
 } from "lucide-react";
 import VerifyOtp from "./VerifyOtp";
+import { Spinner } from "./ui/spinner";
 
 const NavBar = () => {
   const navigate = useNavigate();
-  const { logout, user, cancelSignup } = useContext(AuthContext);
+  const { logout, user, cancelSignup, loading } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState("signup"); // 'login' or 'signup' or 'verify'
 
@@ -107,76 +108,82 @@ const NavBar = () => {
   };
 
   return (
-    <div className="w-full flex justify-between items-center p-6 border-b bg-secondary">
-      <div className="font-bold text-lg">Logo</div>
-      {!user ? (
-        //No user / user logged out
-        <Dialog open={open} onOpenChange={handleDialogChange}>
-          <DialogTrigger asChild>
-            <Button size={"lg"} className="font-bold">
-              Rent Now
-              <ArrowRight />
-            </Button>
-          </DialogTrigger>
-          <DialogContent
-            className="bg-transparent shadow-none border-none p-0 [&>button]:hidden"
-            onInteractOutside={(e) => e.preventDefault()}
-            onEscapeKeyDown={(e) => e.preventDefault()}
-          >
-            {/* For screen readers */}
-            <DialogHeader className={"sr-only"}>
-              <DialogTitle>
-                {form === "login" ? "Login Form" : "Signup Form"}
-              </DialogTitle>
-              <DialogDescription>
-                {form === "login" ? "Login Form" : "Signup Form"}
-              </DialogDescription>
-            </DialogHeader>
-            {renderForm()}
-          </DialogContent>
-        </Dialog>
+    <div>
+      {loading ? (
+        <Spinner className={"size- fixed top-0 bottom-0 left-0 right-0 m-auto"} />
       ) : (
-        //User Logged In
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button>Profile</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className={"w-2xs"} align="start">
-            <DropdownMenuItem>
-              <Heart />
-              Wishlists
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Plane /> Trips
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <MessageSquare />
-              Messages
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <UserCircle2 />
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Bell />
-              Notifications
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings />
-              Account Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <HelpCircle />
-              Help Center
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOutIcon />
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="w-full flex justify-between items-center p-6 border-b bg-secondary">
+          <div className="font-bold text-lg">Logo</div>
+          {!user ? (
+            //No user / user logged out
+            <Dialog open={open} onOpenChange={handleDialogChange}>
+              <DialogTrigger asChild>
+                <Button size={"lg"} className="font-bold">
+                  Rent Now
+                  <ArrowRight />
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                className="bg-transparent shadow-none border-none p-0 [&>button]:hidden"
+                onInteractOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+              >
+                {/* For screen readers */}
+                <DialogHeader className={"sr-only"}>
+                  <DialogTitle>
+                    {form === "login" ? "Login Form" : "Signup Form"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {form === "login" ? "Login Form" : "Signup Form"}
+                  </DialogDescription>
+                </DialogHeader>
+                {renderForm()}
+              </DialogContent>
+            </Dialog>
+          ) : (
+            //User Logged In
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>Profile</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className={"w-2xs"} align="start">
+                <DropdownMenuItem>
+                  <Heart />
+                  Wishlists
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Plane /> Trips
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <MessageSquare />
+                  Messages
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <UserCircle2 />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Bell />
+                  Notifications
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings />
+                  Account Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <HelpCircle />
+                  Help Center
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOutIcon />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       )}
     </div>
   );

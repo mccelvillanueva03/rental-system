@@ -39,8 +39,10 @@ export const refreshInterceptors = (store) => {
             {},
             { withCredentials: true }
           );
-          store.setAccessToken(res.data.accessToken);
-          originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+          const { accessToken, user } = res.data;
+          store.setAccessToken(accessToken);
+          store.setUser(user);
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return apiAuth(originalRequest);
         } catch (error) {
           console.log("Token refresh failed:", error);

@@ -15,9 +15,14 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   setupInterceptors({ accessToken, setAccessToken, logout });
-  // }, [accessToken]);
+  useEffect(() => {
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+    const localUser = localStorage.getItem("user");
+    if (localUser) {
+      setUser(JSON.parse(localUser));
+    }
+    setLoading(false);
+  }, []);
 
   //add access token to headers before each request
   useLayoutEffect(() => {
@@ -25,52 +30,8 @@ export const AuthProvider = ({ children }) => {
   }, [accessToken]);
 
   useLayoutEffect(() => {
-    refreshInterceptors({ setAccessToken, logout });
+    refreshInterceptors({ setUser, setAccessToken, logout });
   }, []);
-
-  //Restore session on page load before render
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await apiPublic.post(
-          "/auth/refreshToken",
-          {},
-          { withCredentials: true }
-        );
-        const { accessToken, user } = res.data;
-        localStorage.setItem("user", JSON.stringify(user));
-        setAccessToken(accessToken);
-        setUser(user);
-      } catch (error) {
-        localStorage.removeItem("user");
-        setUser(null);
-        setAccessToken(null);
-        switch (error?.response?.status) {
-          case 401:
-            console.log("No session. Please login.");
-            return;
-          case 404:
-            console.log("Error: User not found. Please login again");
-            return;
-          case 403:
-            console.log("Session expired. Please login again.");
-            return;
-          default:
-            console.log("Server Error: Refresh token");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
-    const localUser = localStorage.getItem("user");
-    if (localUser) {
-      setUser(localUser);
-    }
-  }, [user]);
 
   //Login
   const login = async (email, password) => {
@@ -107,15 +68,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   //google login
-  async function googleLogin(credentialResponse) {
+  const googleLogin = async (credentialResponse) => {
     try {
       if (!credentialResponse?.credential) {
         toast.error("Missing Google credential");
         return;
       }
-      const res = await apiPublic.post("/auth/google-login", {
-        token: credentialResponse.credential,
-      });
+      const res = await apiPublic.post(
+        "/auth/google-login",
+        {
+          token: credentialResponse.credential,
+        },
+        { withCredentials: true }
+      );
       setAccessToken(res.data.accessToken);
       toast.success("Login Success using Google");
     } catch (err) {
@@ -123,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       toast.error("Google login failed.");
       return;
     }
-  }
+  };
 
   //Logout
   const logout = async () => {
