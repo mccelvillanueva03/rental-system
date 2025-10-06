@@ -27,10 +27,7 @@ export const setupInterceptors = (store) => {
       const originalRequest = error.config;
 
       // If token expired → refresh once
-      if (
-        error.response?.status === 401 ||
-        (error.response?.status === 401 && !originalRequest._retry)
-      ) {
+      if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
         try {
           const res = await privateApi.post(

@@ -1,5 +1,5 @@
-import User from "../../models/User.js";
 import { signToken } from "../../utils/signToken.js";
+import User from "../../models/User.js";
 
 // Cookie options
 export const cookieOptions = {
@@ -18,20 +18,29 @@ export async function refreshToken(req, res) {
       return res.status(401).json({ message: "No refresh token provided." });
     }
     // Find user by refresh token
-    const user = await User.findOne({ refreshToken }).select("+refreshToken");
-    if (!user) return res.status(404).json({ message: "User Not Found." });
+    const user = await User.findOne({ refreshToken }).select(
+      "+refreshToken +refreshTokenExpiresAt"
+    );
+    if (!user)
+      return res
+        .clearCookie("refreshToken", cookieOptions)
+        .status(404)
+        .json({ message: "User Not Found." });
 
     //compare refreshToken to user db refreshToken
     if (!user.refreshToken || user.refreshToken !== refreshToken) {
-      return res.status(403).json({ message: "Invalid Token" });
+      return res
+        .clearCookie("refreshToken", cookieOptions)
+        .status(403)
+        .json({ message: "Invalid Token." });
     }
-    user.select("+refreshTokenExpiresAt");
     // Check if refresh token is expired
     if (user.refreshTokenExpiresAt <= Date.now()) {
       user.refreshToken = null;
       user.refreshTokenExpiresAt = null;
       await user.save();
       return res
+        .clearCookie("refreshToken", cookieOptions)
         .status(403)
         .json({ message: "Refresh Token expired. Please login again." });
     }

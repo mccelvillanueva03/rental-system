@@ -1,9 +1,4 @@
-import React, {
-  createContext,
-  useState,
-  useLayoutEffect,
-  useEffect,
-} from "react";
+import React, { createContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import apiAuth from "../api/apiAuth";
 import apiPublic from "@/api/apiPublic";
@@ -18,10 +13,9 @@ export const AuthProvider = ({ children }) => {
   //   useLayoutEffect(() => {
   //     setupInterceptors({ accessToken, setAccessToken, logout });
   //   }, [accessToken]);
-  //Restore session on page load before render
-  useLayoutEffect(() => {
-    if (user || accessToken) return; // skip if already logged in
 
+  //Restore session on page load before render
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await apiAuth.post(
@@ -29,16 +23,30 @@ export const AuthProvider = ({ children }) => {
           {},
           { withCredentials: true }
         );
-        setAccessToken(res.data.accessToken);
-        setUser(res.data.user);
-        return;
-      } catch {
+        const { accessToken, user } = res.data;
+        localStorage.setItem("user", JSON.stringify(user));
+        setAccessToken(accessToken);
+        setUser(user);
+      } catch (error) {
         setUser(null);
+        switch (error?.response?.status) {
+          case 401:
+            console.log("No session. Please login.");
+            return;
+          case 404:
+            console.log("Error: User not found. Please login again");
+            return;
+          case 403:
+            console.log("Error: Token expired or invalid. Please login again.");
+            return;
+          default:
+            console.log("Server Error: Refresh token");
+        }
       } finally {
         setLoading(false);
       }
     };
-    fetchUser();
+    if (!user || !accessToken) fetchUser();
   }, []);
 
   useEffect(() => {
@@ -46,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     if (localUser) {
       setUser(localUser);
     }
-  }, []);
+  }, [user]);
 
   //Login
   const login = async (email, password) => {
@@ -99,7 +107,6 @@ export const AuthProvider = ({ children }) => {
 
   //Logout
   const logout = async () => {
-    if (!user && !accessToken) return;
     try {
       await apiAuth.post("/auth/logout", {});
       localStorage.removeItem("user");
@@ -114,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  //Cancel Signup and delete pending user
   const cancelSignup = async () => {
     try {
       const email = localStorage.getItem("pendingEmail");
@@ -121,12 +129,57 @@ export const AuthProvider = ({ children }) => {
         apiPublic.post("/auth/cancel-signup", { email });
       }
       localStorage.removeItem("pendingEmail");
+
+      setUser(null);
+      setAccessToken(null);
       toast.error("Signup cancelled.");
     } catch (error) {
       console.error("Error during verification:", error);
       toast.error("Verification failed. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const signup = async (otp) => {
+    const email = localStorage.getItem("pendingEmail");
+
+    if (otp.some((d) => d === "")) {
+      toast.error("Complete the 6-digit code.");
+      return;
+    }
+    const code = otp.join("");
+
+    try {
+      const res = await apiPublic.post("/auth/verify-signup-email", {
+        email,
+        otp: code,
+      });
+
+      const { accessToken, user } = res.data;
+      setAccessToken(accessToken);
+      setUser(user);
+
+      localStorage.removeItem("pendingEmail");
+      localStorage.setItem("user", JSON.stringify(user));
+      toast.success("Signup Success");
+    } catch (error) {
+      switch (error?.response?.status) {
+        case 429:
+          toast.error("Too many requests. Try later.");
+          return;
+        case 401:
+          toast.error("Invalid code. Please try again.");
+          return;
+        case 409:
+          toast.error("Email already verified. Please login.");
+          return;
+        case 404:
+          toast.error("Signup Again. Email not found.");
+          return;
+        default:
+          toast.error("Server error signing up. Please try again.");
+      }
     }
   };
 
@@ -137,6 +190,7 @@ export const AuthProvider = ({ children }) => {
     googleLogin,
     login,
     logout,
+    signup,
     cancelSignup,
   };
 

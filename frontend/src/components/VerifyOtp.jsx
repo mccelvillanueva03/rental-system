@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import { AuthContext } from "@/contexts/AuthContext";
 //shadcn components
 import {
   Card,
@@ -21,26 +22,22 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { X } from "lucide-react";
-import apiPublic from "@/api/apiPublic";
 
-const VerifyOtp = ({ onCloseClick, onSuccessVerify, onSetLogin, setToken }) => {
+const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
+  const { signup } = useContext(AuthContext);
   const length = 6;
+  const [pendingEmail, setPendingEmail] = useState(null);
   const [otp, setOtp] = useState(Array(length).fill(""));
-  const [email, setEmail] = useState(null);
   const inputRefs = useRef([]);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setEmail(localStorage.getItem("pendingEmail"));
-  }, [email]);
-
-  // Focus first empty on mount
+  // Focus first empty on mount and get email from localStorage
   useEffect(() => {
     inputRefs.current[0]?.focus();
+    const email = localStorage.getItem("pendingEmail");
+    setPendingEmail(email);
   }, []);
 
   const moveFocus = (index, dir) => {
@@ -139,36 +136,11 @@ const VerifyOtp = ({ onCloseClick, onSuccessVerify, onSetLogin, setToken }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (otp.some((d) => d === "")) {
-      toast.error("Complete the 6-digit code.");
-      return;
-    }
-    const code = otp.join("");
 
-    try {
-      const res = await apiPublic.post("/auth/verify-signup-email", {
-        email,
-        otp: code,
-      });
-
-      const { accessToken, user } = res.data;
-      setToken(accessToken);
-      onSuccessVerify(user);
-
-      localStorage.removeItem("pendingEmail");
-      setEmail(null);
-      setOtp(Array(length).fill(""));
-
-      onSetLogin();
-      toast.success("Signup Success");
-      navigate("/");
-    } catch (error) {
-      if (error?.response?.status === 429) {
-        toast.error("Too many requests. Try later.");
-        return;
-      }
-      toast.error("Incorrect code");
-    }
+    signup(otp);
+    setOtp(Array(length).fill(""));
+    onSuccessSignup();
+    navigate("/");
   };
 
   return (
@@ -193,18 +165,20 @@ const VerifyOtp = ({ onCloseClick, onSuccessVerify, onSetLogin, setToken }) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={onCloseClick}>Continue</AlertDialogCancel>
-              <AlertDialogAction >
-                Cancel
-              </AlertDialogAction>
+              <AlertDialogCancel onClick={onCloseClick}>
+                Continue
+              </AlertDialogCancel>
+              <AlertDialogAction>Cancel</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
         <CardHeader>
-          <CardTitle className={cn("text-center")}>Enter OTP</CardTitle>
+          <CardTitle className={cn("text-center")}>
+            Email Verification
+          </CardTitle>
           <CardDescription className={cn("text-center")}>
-            Verification code already sent to your email <br />
-            {`"${email}"`}
+            Verification code already sent to <br />
+            {`"${pendingEmail}"`}
           </CardDescription>
         </CardHeader>
         <CardContent>
