@@ -1,16 +1,28 @@
 import User from "../../models/User.js";
 
+const cookieClearOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // false in dev
+  sameSite: "lax",
+  path: "/",
+};
+
 async function logout(req, res) {
   try {
     const refreshToken = req.cookies.refreshToken;
-    console.log("Cookies sent:", req.cookies);
-    
+
     if (!refreshToken) {
-      return res.status(200).json({ message: "No active Session." });
+      return res
+        .clearCookie("refreshToken", cookieClearOptions)
+        .status(200)
+        .json({ message: "No active session to log out from." });
     }
-    const user = await User.findOne({ refreshToken }).select("+refreshToken");
+
+    const user = await User.findOne({ refreshToken }).select(
+      "+refreshToken +refreshTokenExpiresAt"
+    );
     if (!user) {
-      res.clearCookie("refreshToken", cookieOptions);
+      res.clearCookie("refreshToken", cookieClearOptions);
       return res.status(200).json({ message: "Logged out successfully." });
     }
     user.refreshToken = undefined;
@@ -18,12 +30,7 @@ async function logout(req, res) {
     await user.save();
     //clear cookie from client side
     return res
-      .clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // false in dev
-        sameSite: "lax",
-        path: "/",
-      })
+      .clearCookie("refreshToken", cookieClearOptions)
       .status(200)
       .json({ message: "Logged out successfully." });
   } catch (error) {

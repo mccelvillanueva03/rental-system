@@ -1,6 +1,11 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useLayoutEffect,
+} from "react";
 import toast from "react-hot-toast";
-import apiAuth from "../api/apiAuth";
+import apiAuth, { authInterceptors, refreshInterceptors } from "../api/apiAuth";
 import apiPublic from "@/api/apiPublic";
 
 export const AuthContext = createContext();
@@ -10,15 +15,24 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  //   useLayoutEffect(() => {
-  //     setupInterceptors({ accessToken, setAccessToken, logout });
-  //   }, [accessToken]);
+  // useEffect(() => {
+  //   setupInterceptors({ accessToken, setAccessToken, logout });
+  // }, [accessToken]);
+
+  //add access token to headers before each request
+  useLayoutEffect(() => {
+    authInterceptors({ accessToken });
+  }, [accessToken]);
+
+  useLayoutEffect(() => {
+    refreshInterceptors({ setAccessToken, logout });
+  }, []);
 
   //Restore session on page load before render
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await apiAuth.post(
+        const res = await apiPublic.post(
           "/auth/refreshToken",
           {},
           { withCredentials: true }
@@ -28,7 +42,9 @@ export const AuthProvider = ({ children }) => {
         setAccessToken(accessToken);
         setUser(user);
       } catch (error) {
+        localStorage.removeItem("user");
         setUser(null);
+        setAccessToken(null);
         switch (error?.response?.status) {
           case 401:
             console.log("No session. Please login.");
@@ -37,7 +53,7 @@ export const AuthProvider = ({ children }) => {
             console.log("Error: User not found. Please login again");
             return;
           case 403:
-            console.log("Error: Token expired or invalid. Please login again.");
+            console.log("Session expired. Please login again.");
             return;
           default:
             console.log("Server Error: Refresh token");
@@ -46,7 +62,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
-    if (!user || !accessToken) fetchUser();
+    fetchUser();
   }, []);
 
   useEffect(() => {
@@ -63,7 +79,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     try {
-      const res = await apiAuth.post(
+      const res = await apiPublic.post(
         "/auth/login",
         { email, password },
         { withCredentials: true }
@@ -76,11 +92,15 @@ export const AuthProvider = ({ children }) => {
 
       toast.success("Login successful!");
     } catch (error) {
-      if (error.response.status === 429) {
+      if (error?.response?.status === 429) {
         toast.error("Too many login attempts. Please try again later.");
         return;
       }
-      toast.error("Incorrect Email or Password.");
+      if (error?.response?.status === 401) {
+        toast.error("Incorrect Email or Password.");
+        return;
+      }
+      toast.error("Server error logging in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -109,6 +129,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await apiAuth.post("/auth/logout", {});
+
       localStorage.removeItem("user");
       setUser(null);
       setAccessToken(null);

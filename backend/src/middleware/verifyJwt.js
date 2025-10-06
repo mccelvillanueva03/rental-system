@@ -6,7 +6,7 @@ export async function verifyToken(req, res, next) {
     const authHeaders = req.headers.authorization;
 
     if (!authHeaders || !authHeaders.startsWith("Bearer "))
-      return res.status(400).json({ message: "Not Authorized." });
+      return res.status(401).json({ message: "Not Authorized." });
 
     const token = authHeaders.split(" ")[1];
 
