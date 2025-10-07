@@ -3,11 +3,11 @@ import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
 
 async function resendOTP(req, res) {
   try {
-    const { email, password } = req.body || {};
-    if (!email || !password)
+    const { email } = req.body || {};
+    if (!email)
       return res.status(400).json({ message: "All fields are required!." });
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email });
     //check if user exist
     if (!user)
       return res.status(404).json({
@@ -18,11 +18,6 @@ async function resendOTP(req, res) {
       return res
         .status(401)
         .json({ message: "Already verified. Proceed to login." });
-
-    const isPasswordMatch = await user.comparePassword(password); //middleware: UserSchema method
-    //check if password is match to email
-    if (!isPasswordMatch)
-      return res.status(401).json({ message: "Invalid credentials!." });
 
     //resend email
     const result = sendEmailOTP(user);

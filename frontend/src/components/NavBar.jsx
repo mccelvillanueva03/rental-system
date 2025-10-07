@@ -32,6 +32,7 @@ import {
   UserCircle2,
 } from "lucide-react";
 import { Spinner } from "./ui/spinner";
+import toast from "react-hot-toast";
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -64,6 +65,8 @@ const NavBar = () => {
     cancelSignup();
     setOpen(false);
     setForm("signup");
+    toast.success("Signup cancelled.")
+    navigate("/")
   };
 
   const handleOpenSignup = () => setForm("signup");

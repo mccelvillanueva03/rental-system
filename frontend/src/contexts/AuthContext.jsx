@@ -21,6 +21,9 @@ export const AuthProvider = ({ children }) => {
     if (localUser) {
       setUser(JSON.parse(localUser));
     }
+    if (localStorage.getItem("pendingEmail")) {
+      cancelSignup();
+    }
     setLoading(false);
   }, []);
 
@@ -67,6 +70,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signup = async (email, password, firstName, lastName) => {
+    try {
+      await apiPublic.post("/auth/signup", {
+        email,
+        password,
+        firstName,
+        lastName,
+      });
+      localStorage.setItem("pendingEmail", email);
+      toast.success("OTP already sent to your email.");
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 429) {
+        toast.error("Too many login attempts. Please try again later.");
+        return;
+      }
+      if (status === 409) {
+        toast.error("Email is already in use.");
+        return;
+      }
+      if (status === 401) {
+        toast.error("Invalid email address.");
+        return;
+      }
+      console.error("Signup error:", error);
+      toast.error("Signing up failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   //google login
   const googleLogin = async (credentialResponse) => {
     try {
@@ -101,7 +135,6 @@ export const AuthProvider = ({ children }) => {
       toast.success("You have been successfully logged out.");
     } catch (error) {
       console.log("Logout failed:", error);
-      toast.error("Logout failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -115,24 +148,20 @@ export const AuthProvider = ({ children }) => {
         apiPublic.post("/auth/cancel-signup", { email });
       }
       localStorage.removeItem("pendingEmail");
-
       setUser(null);
       setAccessToken(null);
-      toast.error("Signup cancelled.");
-    } catch (error) {
-      console.error("Error during verification:", error);
-      toast.error("Verification failed. Please try again.");
+    } catch {
+      localStorage.removeItem("pendingEmail");
     } finally {
       setLoading(false);
     }
   };
 
-  const signup = async (otp) => {
+  const verifyOtp = async (otp) => {
     const email = localStorage.getItem("pendingEmail");
 
     if (otp.some((d) => d === "")) {
-      toast.error("Complete the 6-digit code.");
-      return;
+      return toast.error("Complete the 6-digit code.");
     }
     const code = otp.join("");
 
@@ -152,20 +181,44 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       switch (error?.response?.status) {
         case 429:
-          toast.error("Too many requests. Try later.");
-          return;
+          return toast.error("Too many requests. Try later.");
         case 401:
-          toast.error("Invalid code. Please try again.");
-          return;
+          return toast.error("Invalid code. Please try again.");
         case 409:
-          toast.error("Email already verified. Please login.");
-          return;
+          return toast.error("Email already verified. Please login.");
         case 404:
-          toast.error("Signup Again. Email not found.");
-          return;
+          return toast.error("Signup Again. Email not found.");
         default:
           toast.error("Server error signing up. Please try again.");
+          return;
       }
+    }
+  };
+
+  const resendOTP = async () => {
+    const email = localStorage.getItem("pendingEmail");
+
+    if (!email) {
+      toast.error("No pending signup found. Please signup again.");
+      return;
+    }
+
+    try {
+      await apiPublic.post("/auth/resend-signup-otp", { email });
+
+      toast.success("OTP resent to your email.");
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 429) {
+        toast.error("Too many requests. Please try again later.");
+        return;
+      }
+      if (status === 404) {
+        toast.error("Email not found. Please signup again.");
+        return;
+      }
+      console.error("Resend OTP error:", error);
+      toast.error("Failed to resend OTP. Please try again.");
     }
   };
 
@@ -175,9 +228,11 @@ export const AuthProvider = ({ children }) => {
     loading,
     googleLogin,
     login,
-    logout,
     signup,
+    logout,
+    verifyOtp,
     cancelSignup,
+    resendOTP,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

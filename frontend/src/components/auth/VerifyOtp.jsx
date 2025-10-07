@@ -26,7 +26,7 @@ import { useNavigate } from "react-router";
 import { X } from "lucide-react";
 
 const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
-  const { signup } = useContext(AuthContext);
+  const { verifyOtp, resendOTP } = useContext(AuthContext);
   const length = 6;
   const [pendingEmail, setPendingEmail] = useState(null);
   const [otp, setOtp] = useState(Array(length).fill(""));
@@ -70,6 +70,7 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
       moveFocus(index, +1);
     }
   };
+  //Delete each code
   const handleKeyDown = (e, index) => {
     const key = e.key;
     if (key === "Backspace") {
@@ -137,7 +138,7 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    signup(otp);
+    verifyOtp(otp);
     setOtp(Array(length).fill(""));
     onSuccessSignup();
     navigate("/");
@@ -166,9 +167,9 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={onCloseClick}>
-                Continue
+                Yes
               </AlertDialogCancel>
-              <AlertDialogAction>Cancel</AlertDialogAction>
+              <AlertDialogAction>No</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -204,17 +205,17 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
               ))}
             </div>
             <div className="grid gap-3">
-              <Button type="submit" className="w-full" onClick={handleSubmit}>
+              <Button type="submit" className="w-full">
                 Submit
               </Button>
             </div>
-            <div className="pt-2 text-sm">
-              Did not receive the code?{" "}
-              <a href="" className="underline underline-offset-4 text-primary">
-                Resend
-              </a>
-            </div>
           </form>
+          <div className="pt-2 text-sm">
+            Did not receive the code?{" "}
+            <Button onClick={resendOTP} variant={"link"}>
+              Resend
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
