@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import { GoogleLogin } from "@react-oauth/google";
 import { cn } from "@/lib/utils.js";
-import { AuthContext } from "../contexts/AuthContext.jsx";
+import { AuthContext } from "../../contexts/AuthContext.jsx";
 
 //shadcn components
 import {

@@ -1,7 +1,8 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
-import LogInForm from "@/components/LogInForm";
-import SignupForm from "./SignupForm";
+import LogInForm from "@/components/auth/LogInForm";
+import SignupForm from "./auth/SignupForm";
+import VerifyOtp from "./auth/VerifyOtp";
 import { AuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,6 @@ import {
   Settings,
   UserCircle2,
 } from "lucide-react";
-import VerifyOtp from "./VerifyOtp";
 import { Spinner } from "./ui/spinner";
 
 const NavBar = () => {
@@ -110,7 +110,9 @@ const NavBar = () => {
   return (
     <div>
       {loading ? (
-        <Spinner className={"size- fixed top-0 bottom-0 left-0 right-0 m-auto"} />
+        <Spinner
+          className={"size- fixed top-0 bottom-0 left-0 right-0 m-auto"}
+        />
       ) : (
         <div className="w-full flex justify-between items-center p-6 border-b bg-secondary">
           <div className="font-bold text-lg">Logo</div>
