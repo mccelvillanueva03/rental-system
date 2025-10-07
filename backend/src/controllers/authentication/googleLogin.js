@@ -29,8 +29,6 @@ async function googleLogin(req, res) {
       }
     } else {
       user = new User({
-        refreshToken,
-        refreshTokenExpiresAt,
         email,
         firstName: (given_name || "").trim(),
         lastName: (family_name || "").trim(),
@@ -43,6 +41,11 @@ async function googleLogin(req, res) {
     }
     const { accessToken, refreshToken, refreshTokenExpiresAt } =
       signToken(user);
+
+    user.refreshToken = refreshToken;
+    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    await user.save();
+
     const userSafe = user.toObject();
     delete userSafe.password;
     delete userSafe.refreshToken;

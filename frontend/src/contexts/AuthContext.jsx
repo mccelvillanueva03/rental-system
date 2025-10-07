@@ -74,14 +74,14 @@ export const AuthProvider = ({ children }) => {
         toast.error("Missing Google credential");
         return;
       }
-      const res = await apiPublic.post(
-        "/auth/google-login",
-        {
-          token: credentialResponse.credential,
-        },
-        { withCredentials: true }
-      );
-      setAccessToken(res.data.accessToken);
+      const res = await apiPublic.post("/auth/google-login", {
+        token: credentialResponse.credential,
+      });
+      const { accessToken, user } = res.data;
+      localStorage.setItem("user", JSON.stringify(user));
+      setAccessToken(accessToken);
+      setUser(user);
+
       toast.success("Login Success using Google");
     } catch (err) {
       console.error(err);

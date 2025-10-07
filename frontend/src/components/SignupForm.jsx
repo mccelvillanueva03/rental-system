@@ -97,10 +97,6 @@ const SignupForm = ({ onLoginClick, setVerifyOpen, onCloseClick }) => {
     }
   };
 
-  async function handleGoogleError() {
-    toast.error("Google Login Failed");
-  }
-
   return (
     <div>
       <div className="flex flex-col gap-6">
@@ -186,8 +182,10 @@ const SignupForm = ({ onLoginClick, setVerifyOpen, onCloseClick }) => {
                 </Button>
                 <p className="text-sm text-gray-500">or</p>
                 <GoogleLogin
-                  onSuccess={googleLogin}
-                  onError={handleGoogleError}
+                  onSuccess={(credentialResponse) => {
+                    googleLogin(credentialResponse);
+                    navigate("/");
+                  }}
                   theme="outline"
                   shape="rectangular"
                   size="medium"

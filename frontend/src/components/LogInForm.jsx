@@ -29,10 +29,6 @@ const LogInForm = ({ onSignupClick, onCloseClick }) => {
     navigate("/");
   };
 
-  const handleGoogleLogin = async () => {
-    googleLogin()
-  }
-
   return (
     <div className="flex flex-col gap-6 ">
       <Card className="p-5 m-auto w-md">
@@ -91,7 +87,10 @@ const LogInForm = ({ onSignupClick, onCloseClick }) => {
               <p className="text-sm text-gray-500">or</p>
               <div>
                 <GoogleLogin
-                  onSuccess={handleGoogleLogin}
+                  onSuccess={(credentialResponse) => {
+                    googleLogin(credentialResponse);
+                    navigate("/");
+                  }}
                   theme="outline"
                   shape="rectangular"
                   size="medium"
