@@ -138,7 +138,10 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    verifyOtp(otp);
+    const success = await verifyOtp(otp);
+    if (!success) return;
+    // Clear state and localStorage
+    localStorage.removeItem("pendingEmail");
     setOtp(Array(length).fill(""));
     onSuccessSignup();
     navigate("/");
@@ -166,9 +169,7 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={onCloseClick}>
-                Yes
-              </AlertDialogCancel>
+              <AlertDialogCancel onClick={onCloseClick}>Yes</AlertDialogCancel>
               <AlertDialogAction>No</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

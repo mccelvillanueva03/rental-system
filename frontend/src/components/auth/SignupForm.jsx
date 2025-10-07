@@ -66,36 +66,16 @@ const SignupForm = ({ onLoginClick, setVerifyOpen, onCloseClick }) => {
       toast.error("Invalid name Last name.");
       return;
     }
+    //call signup from context and open verify otp dialog on success 
     signup(email, password, firstName, lastName);
-    // try {
-    //   await api.post("/auth/signup", { email, password, firstName, lastName });
-    //   localStorage.setItem("pendingEmail", email);
-    // Clear form
+    localStorage.setItem("pendingEmail", email);
+
     setEmail("");
     setPassword("");
     setFirstName("");
     setLastName("");
     setVerifyOpen();
-
-    //   toast.success("OTP already sent to your email.");
-    //   navigate("/");
-    // } catch (error) {
-    //   const status = error?.response?.status;
-    //   if (status === 429) {
-    //     toast.error("Too many login attempts. Please try again later.");
-    //     return;
-    //   }
-    //   if (status === 409) {
-    //     toast.error("Email is already in use.");
-    //     return;
-    //   }
-    //   if (status === 401) {
-    //     toast.error("Invalid email address.");
-    //     return;
-    //   }
-    //   console.error("Signup error:", error);
-    //   toast.error("Signing up failed.");
-    // }
+    navigate("/");
   };
 
   return (
