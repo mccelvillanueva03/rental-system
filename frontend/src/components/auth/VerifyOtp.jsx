@@ -20,10 +20,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { X } from "lucide-react";
+import { InputOTP } from "../ui/input-otp";
 
 const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
   const { verifyOtp, resendOTP } = useContext(AuthContext);
@@ -39,101 +39,6 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
     const email = localStorage.getItem("pendingEmail");
     setPendingEmail(email);
   }, []);
-
-  const moveFocus = (index, dir) => {
-    const next = index + dir;
-    if (next >= 0 && next < length) {
-      inputRefs.current[next]?.focus();
-    }
-  };
-  const handleChange = (value, index) => {
-    if (value === "") {
-      // clearing manually (user selected and hit delete)
-      setOtp((prev) => {
-        const next = [...prev];
-        next[index] = "";
-        return next;
-      });
-      return;
-    }
-    // Take only the last typed character (handles paste of multi chars into one box)
-    const digit = value.slice(-1);
-    if (!/^\d$/.test(digit)) return;
-
-    setOtp((prev) => {
-      const next = [...prev];
-      next[index] = digit;
-      return next;
-    });
-    // Auto-advance
-    if (index < length - 1) {
-      moveFocus(index, +1);
-    }
-  };
-  //Delete each code
-  const handleKeyDown = (e, index) => {
-    const key = e.key;
-    if (key === "Backspace") {
-      if (otp[index]) {
-        // clear current
-        setOtp((prev) => {
-          const next = [...prev];
-          next[index] = "";
-          return next;
-        });
-      } else {
-        // go back & clear previous
-        if (index > 0) {
-          moveFocus(index, -1);
-          setOtp((prev) => {
-            const next = [...prev];
-            next[index - 1] = "";
-            return next;
-          });
-        }
-      }
-      e.preventDefault();
-      return;
-    }
-    if (key === "ArrowLeft") {
-      moveFocus(index, -1);
-      e.preventDefault();
-      return;
-    }
-    if (key === "ArrowRight") {
-      moveFocus(index, +1);
-      e.preventDefault();
-      return;
-    }
-    // Allow direct overwrite by typing a digit (without needing backspace)
-    if (/^\d$/.test(key)) {
-      setOtp((prev) => {
-        const next = [...prev];
-        next[index] = key;
-        return next;
-      });
-      if (index < length - 1) moveFocus(index, +1);
-      e.preventDefault();
-    }
-  };
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, length);
-    if (!text) return;
-    const chars = text.split("");
-    setOtp(Array.from({ length }, (_, i) => chars[i] || ""));
-    // Focus last filled
-    const lastIndex = Math.min(chars.length, length) - 1;
-    if (lastIndex >= 0) inputRefs.current[lastIndex]?.focus();
-  };
-  const handleFocus = (index) => {
-    // Auto-select so a new digit overwrites
-    const el = inputRefs.current[index];
-    if (el) el.select();
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -185,26 +90,11 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex gap-3">
-              {otp.map((digit, index) => (
-                <Input
-                  key={index}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  type="text"
-                  value={digit}
-                  onChange={(e) => handleChange(e.target.value, index)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  onPaste={handlePaste}
-                  onFocus={() => handleFocus(index)}
-                  maxLength={1}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  className={cn(
-                    "w-12 h-12 text-center text-lg font-semibold rounded-md"
-                  )}
-                />
-              ))}
-            </div>
+            <InputOTP
+              length={6}
+              onChange={(otp) => setOtp(otp)}
+              onComplete={(code) => setOtp(code)}
+            />
             <div className="grid gap-3">
               <Button type="submit" className="w-full">
                 Submit
