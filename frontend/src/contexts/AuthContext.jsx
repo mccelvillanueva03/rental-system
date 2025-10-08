@@ -17,13 +17,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
+    //check for logged in user on initial load
     const localUser = localStorage.getItem("user");
     if (localUser) {
       setUser(JSON.parse(localUser));
     }
+    //clear any pending signup or forgot password states
     if (localStorage.getItem("pendingEmail")) {
       cancelSignup();
     }
+    //clear any forgot password email
     if (localStorage.getItem("forgotEmail")) {
       localStorage.removeItem("forgotEmail");
     }
@@ -57,23 +60,24 @@ export const AuthProvider = ({ children }) => {
         { email, password },
         { withCredentials: true }
       );
-
       const { accessToken, user } = res.data;
       localStorage.setItem("user", JSON.stringify(user));
       setAccessToken(accessToken);
       setUser(user);
 
       toast.success("Login successful!");
+      return true;
     } catch (error) {
       if (error?.response?.status === 429) {
         toast.error("Too many login attempts. Please try again later.");
-        return;
+        return false;
       }
       if (error?.response?.status === 401) {
         toast.error("Incorrect Email or Password.");
-        return;
+        return false;
       }
       toast.error("Server error logging in. Please try again.");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -88,22 +92,24 @@ export const AuthProvider = ({ children }) => {
         lastName,
       });
       toast.success("OTP already sent to your email.");
+      return true;
     } catch (error) {
       const status = error?.response?.status;
       if (status === 429) {
         toast.error("Too many login attempts. Please try again later.");
-        return;
+        return false;
       }
       if (status === 409) {
         toast.error("Email is already in use.");
-        return;
+        return false;
       }
       if (status === 401) {
         toast.error("Invalid email address.");
-        return;
+        return false;
       }
       console.error("Signup error:", error);
       toast.error("Signing up failed.");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -137,7 +143,8 @@ export const AuthProvider = ({ children }) => {
     try {
       await apiAuth.post("/auth/logout", {});
 
-      localStorage.removeItem("user");
+      const user = localStorage.getItem("user");
+      if (user) localStorage.removeItem("user");
       setUser(null);
       setAccessToken(null);
       toast.success("You have been successfully logged out.");

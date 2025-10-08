@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, use } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
 import LogInForm from "@/components/auth/LogInForm";
 import SignupForm from "./auth/SignupForm";
@@ -61,7 +61,9 @@ const NavBar = () => {
 
   const handleCloseClick = () => {
     setIsDialogOpen(false);
-    setForm("login");
+    setTimeout(() => {
+      setForm("signup");
+    }, 500);
   };
 
   const handleCancelSignup = () => {

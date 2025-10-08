@@ -67,9 +67,10 @@ const SignupForm = ({ onLoginClick, setVerifyOpen, onCloseClick }) => {
       return;
     }
     //call signup from context and open verify otp dialog on success 
-    signup(email, password, firstName, lastName);
+    const success = await signup(email, password, firstName, lastName);
+    if (!success) return;
+    
     localStorage.setItem("pendingEmail", email);
-
     setEmail("");
     setPassword("");
     setFirstName("");

@@ -25,7 +25,8 @@ const LogInForm = ({ onSignupClick, onCloseClick, onForgotPasswordClick }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    login(email, password);
+    const success = await login(email, password);
+    if (!success) return;
     navigate("/");
   };
 
@@ -53,7 +54,6 @@ const LogInForm = ({ onSignupClick, onCloseClick, onForgotPasswordClick }) => {
                 autoFocus
                 id="email"
                 name="email"
-                type="email"
                 placeholder="Enter Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
