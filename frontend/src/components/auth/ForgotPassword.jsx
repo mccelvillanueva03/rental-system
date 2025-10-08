@@ -15,7 +15,11 @@ import { InputOTP } from "../ui/input-otp";
 import { Separator } from "../ui/separator";
 import { useNavigate } from "react-router";
 
-const ForgotPassword = ({ onCloseClick, onLoginClick }) => {
+const ForgotPassword = ({
+  onCloseClick,
+  onLoginClick,
+  onSuccessResetPassword,
+}) => {
   const { forgotPassword, resetPassword } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -41,6 +45,7 @@ const ForgotPassword = ({ onCloseClick, onLoginClick }) => {
     setNewPassword("");
     setConfirmPassword("");
     setOtp(Array(length).fill(""));
+    onSuccessResetPassword();
     navigate("/");
   };
 
@@ -71,13 +76,17 @@ const ForgotPassword = ({ onCloseClick, onLoginClick }) => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <Button className={"w-full"} type="submit" variant={isEmailSubmitted ? "outline" : "default"}>
+            <Button
+              className={"w-full"}
+              type="submit"
+              variant={isEmailSubmitted ? "outline" : "default"}
+            >
               {isEmailSubmitted ? "Resend Code" : "Send Code"}
             </Button>
           </form>
-          <Separator className="my-5 bg-muted-foreground/50" />
           {isEmailSubmitted ? (
             <form className="space-y-4" onSubmit={handleResetPassword}>
+              <Separator className="my-5 bg-muted-foreground/50" />
               <div className=" gap-6 w-full flex justify-center items-center flex-col mb-5">
                 <Label htmlFor="otp">Enter Code</Label>
                 <InputOTP

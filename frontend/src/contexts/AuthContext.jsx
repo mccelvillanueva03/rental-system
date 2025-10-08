@@ -290,19 +290,14 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
     try {
-      const res = await apiPublic.post("/auth/verify-forgot-password", {
+      await apiPublic.post("/auth/verify-forgot-password", {
         email,
         otp: code,
         newPassword,
       });
-      const { accessToken, user } = res.data;
-
-      localStorage.setItem("user", JSON.stringify(user));
-      setAccessToken(accessToken);
-      setUser(user);
 
       localStorage.removeItem("forgotEmail");
-      toast.success("Password reset successful!");
+      toast.success("Password reset successful. Please login.");
       return true;
     } catch (error) {
       switch (error?.response?.status) {

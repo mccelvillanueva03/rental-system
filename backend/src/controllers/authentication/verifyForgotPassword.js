@@ -21,10 +21,6 @@ async function verifyForgotPassword(req, res) {
         .status(410)
         .json({ message: "OTP expired. Please request again." });
 
-    const { accessToken, refreshToken, refreshTokenExpiresAt } = signToken(user);
-
-    user.refreshToken = refreshToken;
-    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
     user.password = newPassword;
     user.otp = undefined;
     user.otpExpiresAt = undefined;
@@ -32,13 +28,10 @@ async function verifyForgotPassword(req, res) {
 
     const userSafe = user.toObject();
     delete userSafe.password;
-    delete userSafe.refreshToken;
-    delete userSafe.refreshTokenExpiresAt;
 
-    return res
-      .cookie("refreshToken", refreshToken, cookieOptions)
-      .status(200)
-      .json({ accessToken, user: userSafe });
+    return res.status(200).json({
+      message: "Password reset successful.",
+    });
   } catch (error) {
     console.log("Error in verifying Forgot Password.", error);
     return res.status(500).json({ message: "Server Error." });

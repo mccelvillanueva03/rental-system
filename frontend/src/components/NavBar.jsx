@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, use } from "react";
 import { useNavigate } from "react-router";
 import LogInForm from "@/components/auth/LogInForm";
 import SignupForm from "./auth/SignupForm";
@@ -40,33 +40,33 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 const NavBar = () => {
   const navigate = useNavigate();
   const { logout, user, cancelSignup, loading } = useContext(AuthContext);
-  const [open, setOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [form, setForm] = useState("signup");
 
   useEffect(() => {
     if (!user) {
-      setOpen(false);
+      setIsDialogOpen(false);
       setForm("signup");
     }
   }, [user]);
 
   const handleDialogChange = (isOpen) => {
     if (!isOpen) {
-      setOpen(false);
+      setIsDialogOpen(false);
       setForm("login");
       return;
     }
-    setOpen(isOpen);
+    setIsDialogOpen(isOpen);
   };
 
   const handleCloseClick = () => {
-    setOpen(false);
-    setForm("signup");
+    setIsDialogOpen(false);
+    setForm("login");
   };
 
   const handleCancelSignup = () => {
     cancelSignup();
-    setOpen(false);
+    setIsDialogOpen(false);
     setForm("signup");
     toast.success("Signup cancelled.");
     navigate("/");
@@ -110,6 +110,7 @@ const NavBar = () => {
             onCloseClick={handleCloseClick}
             onSignupClick={handleOpenSignup}
             onLoginClick={handleOpenLogin}
+            onSuccessResetPassword={handleOpenLogin}
           />
         );
       default:
@@ -128,7 +129,7 @@ const NavBar = () => {
           <div className="font-bold text-lg">Logo</div>
           {!user ? (
             //No user / user logged out
-            <Dialog open={open} onOpenChange={handleDialogChange}>
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
               <DialogTrigger asChild>
                 <Button size={"lg"} className="font-bold">
                   Rent Now
