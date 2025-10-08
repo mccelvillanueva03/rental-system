@@ -29,16 +29,19 @@ import {
   MessageSquare,
   Plane,
   Settings,
-  UserCircle2,
+  UserCircle,
+  UserIcon,
 } from "lucide-react";
 import { Spinner } from "./ui/spinner";
 import toast from "react-hot-toast";
+import ForgotPassword from "./auth/forgotPassword";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const NavBar = () => {
   const navigate = useNavigate();
   const { logout, user, cancelSignup, loading } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState("signup"); // 'login' or 'signup' or 'verify'
+  const [form, setForm] = useState("signup");
 
   useEffect(() => {
     if (!user) {
@@ -65,14 +68,14 @@ const NavBar = () => {
     cancelSignup();
     setOpen(false);
     setForm("signup");
-    toast.success("Signup cancelled.")
-    navigate("/")
+    toast.success("Signup cancelled.");
+    navigate("/");
   };
 
   const handleOpenSignup = () => setForm("signup");
   const handleOpenLogin = () => setForm("login");
   const handleOpenVerify = () => setForm("verify");
-  const handleSuccessVerify = () => setOpen(false);
+  const handleOpenForgotPassword = () => setForm("forgotPassword");
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -87,6 +90,7 @@ const NavBar = () => {
           <LogInForm
             onSignupClick={handleOpenSignup}
             onCloseClick={handleCloseClick}
+            onForgotPasswordClick={handleOpenForgotPassword}
           />
         );
       case "signup":
@@ -99,10 +103,13 @@ const NavBar = () => {
           />
         );
       case "verify":
+        return <VerifyOtp onCloseClick={handleCancelSignup} />;
+      case "forgotPassword":
         return (
-          <VerifyOtp
-            onCloseClick={handleCancelSignup}
-            onSetLogin={handleSuccessVerify}
+          <ForgotPassword
+            onCloseClick={handleCloseClick}
+            onSignupClick={handleOpenSignup}
+            onLoginClick={handleOpenLogin}
           />
         );
       default:
@@ -149,9 +156,18 @@ const NavBar = () => {
             //User Logged In
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button>Profile</Button>
+                <Avatar className={"cursor-pointer shadow-md"}>
+                  <AvatarImage />
+                  <AvatarFallback className={"text-primary"}>
+                    <UserIcon />
+                  </AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent className={"w-2xs"} align="start">
+                <DropdownMenuItem>
+                  <UserCircle />
+                  Profile
+                </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Heart />
                   Wishlists
@@ -162,10 +178,6 @@ const NavBar = () => {
                 <DropdownMenuItem>
                   <MessageSquare />
                   Messages
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <UserCircle2 />
-                  Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>

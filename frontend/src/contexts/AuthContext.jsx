@@ -24,6 +24,9 @@ export const AuthProvider = ({ children }) => {
     if (localStorage.getItem("pendingEmail")) {
       cancelSignup();
     }
+    if (localStorage.getItem("forgotEmail")) {
+      localStorage.removeItem("forgotEmail");
+    }
     setLoading(false);
   }, []);
 
@@ -42,6 +45,12 @@ export const AuthProvider = ({ children }) => {
       toast.error("All fields are required.");
       return;
     }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      //simple email validation
+      toast.error("Invalid email address.");
+      return;
+    }
+
     try {
       const res = await apiPublic.post(
         "/auth/login",
@@ -78,7 +87,6 @@ export const AuthProvider = ({ children }) => {
         firstName,
         lastName,
       });
-      localStorage.setItem("pendingEmail", email);
       toast.success("OTP already sent to your email.");
     } catch (error) {
       const status = error?.response?.status;
@@ -161,7 +169,8 @@ export const AuthProvider = ({ children }) => {
     const email = localStorage.getItem("pendingEmail");
 
     if (otp.some((d) => d === "")) {
-      return toast.error("Complete the 6-digit code.");
+      toast.error("Complete the 6-digit code.");
+      return;
     }
     const code = otp.join("");
 
@@ -181,22 +190,27 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       switch (error?.response?.status) {
         case 429:
-          return toast.error("Too many requests. Try later.");
+          toast.error("Too many requests. Try later.");
+          break;
         case 401:
-          return toast.error("Invalid code. Please try again.");
+          toast.error("Invalid code. Please try again.");
+          break;
         case 409:
-          return toast.error("Email already verified. Please login.");
+          toast.error("Email already verified. Please login.");
+          break;
         case 404:
-          return toast.error("Signup Again. Email not found.");
+          toast.error("Signup Again. Email not found.");
+          break;
         default:
           toast.error("Server error signing up. Please try again.");
-          return;
+          break;
       }
+      return false;
     }
   };
 
   const resendOTP = async () => {
-    const email = localStorage.getItem("pendingEmail");
+    const email = localStorage.getItem("pendingEmail") || user?.email;
 
     if (!email) {
       toast.error("No pending signup found. Please signup again.");
@@ -222,6 +236,96 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const forgotPassword = async (email) => {
+    if (!email) {
+      toast.error("Email is required.");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      //simple email validation
+      toast.error("Invalid email address.");
+      return;
+    }
+
+    try {
+      await apiPublic.post("/auth/forgot-password", { email });
+
+      localStorage.setItem("forgotEmail", email);
+      toast.success("Reset code sent to your email.");
+      return true;
+    } catch (error) {
+      console.log("Error sending email:", error);
+      if (error?.response?.status === 429) {
+        toast.error("Too many requests. Please try again later.");
+        return;
+      }
+      if (error?.response?.status === 404) {
+        toast.error("Email not found. Please sign up.");
+        return;
+      }
+      toast.error("Server Error.");
+      return false;
+    }
+  };
+
+  const resetPassword = async (otp, newPassword, confirmPassword) => {
+    const email = localStorage.getItem("forgotEmail");
+
+    if (otp.some((d) => d === "")) {
+      toast.error("Complete the 6-digit code.");
+      return;
+    }
+    const code = otp.join("");
+
+    if (!code || !email || !newPassword || !confirmPassword) {
+      toast.error("All fields are required.");
+      return false;
+    }
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return false;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match.");
+      return false;
+    }
+    try {
+      const res = await apiPublic.post("/auth/verify-forgot-password", {
+        email,
+        otp: code,
+        newPassword,
+      });
+      const { accessToken, user } = res.data;
+
+      localStorage.setItem("user", JSON.stringify(user));
+      setAccessToken(accessToken);
+      setUser(user);
+
+      localStorage.removeItem("forgotEmail");
+      toast.success("Password reset successful!");
+      return true;
+    } catch (error) {
+      switch (error?.response?.status) {
+        case 429:
+          toast.error("Too many requests. Try later.");
+          break;
+        case 401:
+          toast.error("Invalid code. Please try again.");
+          break;
+        case 410:
+          toast.error("Code expired. Please request again.");
+          break;
+        case 404:
+          toast.error("Email not found.");
+          break;
+        default:
+          toast.error("Server error resetting password. Please try again.");
+          break;
+      }
+      return false;
+    }
+  };
+
   const value = {
     user,
     accessToken,
@@ -233,6 +337,8 @@ export const AuthProvider = ({ children }) => {
     verifyOtp,
     cancelSignup,
     resendOTP,
+    forgotPassword,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

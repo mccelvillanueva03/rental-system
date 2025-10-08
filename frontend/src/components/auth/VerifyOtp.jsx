@@ -25,12 +25,12 @@ import { useNavigate } from "react-router";
 import { X } from "lucide-react";
 import { InputOTP } from "../ui/input-otp";
 
-const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
+const VerifyOtp = ({ onCloseClick }) => {
   const { verifyOtp, resendOTP } = useContext(AuthContext);
   const length = 6;
   const [pendingEmail, setPendingEmail] = useState(null);
-  const [otp, setOtp] = useState(Array(length).fill(""));
   const inputRefs = useRef([]);
+  const [otp, setOtp] = useState(Array(length).fill(""));
 
   const navigate = useNavigate();
   // Focus first empty on mount and get email from localStorage
@@ -48,7 +48,6 @@ const VerifyOtp = ({ onCloseClick, onSuccessSignup }) => {
     // Clear state and localStorage
     localStorage.removeItem("pendingEmail");
     setOtp(Array(length).fill(""));
-    onSuccessSignup();
     navigate("/");
   };
 

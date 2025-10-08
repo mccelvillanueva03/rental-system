@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-const LogInForm = ({ onSignupClick, onCloseClick }) => {
+const LogInForm = ({ onSignupClick, onCloseClick, onForgotPasswordClick }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,12 +63,14 @@ const LogInForm = ({ onSignupClick, onCloseClick }) => {
             <div className="grid gap-3">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <a
-                  href="#"
-                  className="inline-block ml-auto text-sm underline-offset-4 hover:underline"
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={onForgotPasswordClick}
+                  className="inline-block ml-auto text-sm text-muted-foreground p-0"
                 >
                   Forgot your password?
-                </a>
+                </Button>
               </div>
               <Input
                 id="password"
