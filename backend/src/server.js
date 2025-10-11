@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import authRouter from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 
@@ -25,6 +26,7 @@ if (process.env.NODE_ENV !== "production") {
 app.use(express.json());
 app.use(rateLimiter);
 
+app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 
 connectDB().then(() => {
