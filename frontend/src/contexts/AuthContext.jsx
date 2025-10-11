@@ -135,6 +135,8 @@ export const AuthProvider = ({ children }) => {
       console.error(err);
       toast.error("Google login failed.");
       return;
+    } finally {
+      setLoading(false);
     }
   };
 
