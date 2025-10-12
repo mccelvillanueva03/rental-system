@@ -2,6 +2,7 @@ import validator from "validator";
 
 import User from "../../models/User.js";
 import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
+import { capitalizedFirstLetter } from "../../utils/capitalizedFirstLetter.js";
 
 async function signup(req, res) {
   try {
@@ -23,7 +24,22 @@ async function signup(req, res) {
     if (existingUser) {
       return res.status(409).json({ message: "Email is already in use." });
     }
-    const newUser = new User({ email, password, firstName, lastName });
+    capitalizedFirstLetter(firstName);
+    capitalizedFirstLetter(lastName);
+
+    let username;
+    do {
+      username = `user${Math.floor(1000 + Math.random() * 9000)}`;
+    } while (await User.findOne({ username }));
+
+    const newUser = new User({
+      email,
+      password,
+      firstName,
+      lastName,
+      username,
+    });
+    await newUser.save();
 
     //send OTP to user email
     const result = sendEmailOTP(newUser);
