@@ -48,7 +48,12 @@ export function authorizeRole(...roles) {
       return res.status(401).json({ message: "User not authenticated." });
     }
     // Check if the user's role is included in the allowed roles
-    if (!roles.includes(req.user.role)) {
+    const userRoles = Array.isArray(req.user.role)
+      ? req.user.role
+      : [req.user.role];
+
+    const hasRole = userRoles.some((role) => roles.includes(role));
+    if (!hasRole) {
       return res.status(403).json({ message: "Access Denied." });
     }
     // If the role is authorized, proceed to the next middleware

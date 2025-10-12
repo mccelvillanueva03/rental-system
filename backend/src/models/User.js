@@ -9,10 +9,18 @@ import { passwordChanged } from "../middleware/passwordChangedAt.js";
 
 const userSchema = new mongoose.Schema(
   {
-    refreshToken: {type: String, select: false},
+    //token
+    refreshToken: { type: String, select: false },
     refreshTokenExpiresAt: { type: Date, select: false },
+
+    //user details
+    isAdmin: { type: Boolean, default: false },
+    username: { type: String, trim: true, unique: true, sparse: true },
     firstName: { type: String, trim: true },
     lastName: { type: String, trim: true },
+    password: { type: String, required: true, minlength: 6, select: false },
+    passwordChangedAt: { type: Date },
+    role: { type: [String], enum: ["tenant", "landlord"], default: ["tenant"] },
     email: {
       type: String,
       required: true,
@@ -21,17 +29,35 @@ const userSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    password: { type: String, required: true, minlength: 6, select: false },
-    passwordChangedAt: { type: Date },
-    role: { type: String, default: "tenant" },
+    isEmailVerified: { type: Boolean, default: false },
 
     //User login with Google OAuth
     googleId: { type: String },
     isGoogleAccount: { type: Boolean, default: false },
 
-    isEmailVerified: { type: Boolean, default: false },
+    //otp
     otp: { type: String },
     otpExpiresAt: { type: Date },
+
+    //reviews
+    averageRating: { type: Number, max: 5, default: 0 },
+    totalReviews: { type: Number, default: 0 },
+
+    reviewsGiven: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+        default: [],
+      },
+    ],
+
+    reviewsReceived: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+        default: [],
+      },
+    ],
   },
   { timestamps: true }
 );

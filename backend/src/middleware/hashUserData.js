@@ -1,9 +1,6 @@
 import bcrypt from "bcryptjs";
 
 async function hashUserData(next) {
-  //if user is using google account, skip hashing
-  if (this.isGoogleAccount) return next();
-
   //if password is modified, hash it before saving
   if (this.isModified("password")) {
     const saltPassword = await bcrypt.genSalt(10);
