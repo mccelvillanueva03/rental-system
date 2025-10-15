@@ -8,15 +8,11 @@ import verifyEmail from "../controllers/authentication/verifyEmail.js";
 import login from "../controllers/authentication/login.js";
 import signup from "../controllers/authentication/signup.js";
 import verifyForgotPassword from "../controllers/authentication/verifyForgotPassword.js";
-import getAllUsers from "../controllers/authentication/getAllUsers.js";
 import { refreshToken } from "../controllers/authentication/refreshToken.js";
 import logout from "../controllers/authentication/logout.js";
 import cancelVerifyEmail from "../controllers/authentication/cancelVerifyEmail.js";
 
 const router = express.Router();
-//for checking all users - admin only
-router.get("/users", getAllUsers);
-
 //protected routes
 router.post(
   "/change-password",
