@@ -4,7 +4,7 @@ import googleLogin from "../controllers/authentication/googleLogin.js";
 import changePassword from "../controllers/authentication/changePassword.js";
 import forgotPassword from "../controllers/authentication/forgotPassword.js";
 import resendOTP from "../controllers/authentication/resendOtp.js";
-import verifyEmail from "../controllers/authentication/verifyEmail.js";
+import verifyEmail from "../controllers/authentication/verifySignupEmail.js";
 import login from "../controllers/authentication/login.js";
 import signup from "../controllers/authentication/signup.js";
 import verifyForgotPassword from "../controllers/authentication/verifyForgotPassword.js";
