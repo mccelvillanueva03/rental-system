@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema(
     refreshTokenExpiresAt: { type: Date, select: false },
 
     //user details
+    profileImage: {
+      url: String,
+      public_id: String,
+    },
     isAdmin: { type: Boolean, default: false },
     username: { type: String, trim: true, unique: true, sparse: true },
     firstName: { type: String, trim: true },
