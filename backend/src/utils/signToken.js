@@ -9,7 +9,7 @@ export const signToken = (user) => {
   };
 
   const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: process.env.JWT_ACCESS_EXPIRES || "1d",
+    expiresIn: process.env.JWT_ACCESS_EXPIRES || "30m",
   });
   // Generate a secure random refresh token
   const refreshToken = crypto.randomBytes(64).toString("hex");
