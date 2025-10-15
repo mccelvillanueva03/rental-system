@@ -3,6 +3,7 @@ import validator from "validator";
 import User from "../../models/User.js";
 import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
 import { capitalizedFirstLetter } from "../../utils/capitalizedFirstLetter.js";
+import { signOtpToken } from "../../utils/signOtpToken.js";
 
 async function signup(req, res) {
   try {
@@ -41,11 +42,15 @@ async function signup(req, res) {
     });
     await newUser.save();
 
+    const purpose = "verify_signup_email";
+
+    const { otpToken, otp } = signOtpToken(newUser, purpose);
+
     //send OTP to user email
-    const result = sendEmailOTP(newUser);
+    const result = sendEmailOTP(newUser, otp);
     return res
       .status(200)
-      .json({ message: "OTP send successfully", ...result });
+      .json({ message: "OTP send successfully", otpToken, ...result });
   } catch (error) {
     if (error?.code === 409) {
       return res.status(409).json({ message: "Email is already in use." });

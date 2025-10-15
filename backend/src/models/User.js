@@ -39,10 +39,6 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String },
     isGoogleAccount: { type: Boolean, default: false },
 
-    //otp
-    otp: { type: String },
-    otpExpiresAt: { type: Date },
-
     //reviews
     averageRating: { type: Number, max: 5, default: 0 },
     totalReviews: { type: Number, default: 0 },
