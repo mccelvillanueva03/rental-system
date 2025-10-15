@@ -1,4 +1,4 @@
-import { signToken } from "../../utils/signToken.js";
+import { signToken } from "../../utils/signAccessToken.js";
 import User from "../../models/User.js";
 
 // Cookie options

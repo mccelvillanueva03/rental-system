@@ -1,6 +1,6 @@
 import { OAuth2Client } from "google-auth-library";
 import User from "../../models/User.js";
-import { signToken } from "../../utils/signToken.js";
+import { signToken } from "../../utils/signAccessToken.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function googleLogin(req, res) {
