@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
       url: String,
       public_id: String,
     },
-    isAdmin: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false, select: false },
     username: { type: String, trim: true, unique: true, sparse: true },
     firstName: { type: String, trim: true },
     lastName: { type: String, trim: true },

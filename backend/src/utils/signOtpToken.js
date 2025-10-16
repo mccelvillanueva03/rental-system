@@ -10,10 +10,8 @@ export const signOtpToken = (user, purpose) => {
     otp: otp,
     purpose: purpose,
   };
+  const expiresIn = "5m";
+  const otpToken = jwt.sign(payload, process.env.JWT_OTP_SECRET, { expiresIn });
 
-  const otpToken = jwt.sign(payload, process.env.JWT_OTP_SECRET, {
-    expiresIn: "5m",
-  });
-
-  return { otpToken, otp };
+  return { otpToken, otp, expiresIn };
 };

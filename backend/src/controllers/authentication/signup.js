@@ -43,14 +43,13 @@ async function signup(req, res) {
     await newUser.save();
 
     const purpose = "verify_signup_email";
-
-    const { otpToken, otp } = signOtpToken(newUser, purpose);
-
+    const { otpToken, otp, expiresIn } = signOtpToken(newUser, purpose);
     //send OTP to user email
-    const result = sendEmailOTP(newUser, otp);
+    sendEmailOTP(newUser, otp);
+
     return res
       .status(200)
-      .json({ message: "OTP send successfully", otpToken, ...result });
+      .json({ message: "OTP send successfully", otpToken, expiresIn });
   } catch (error) {
     if (error?.code === 409) {
       return res.status(409).json({ message: "Email is already in use." });
