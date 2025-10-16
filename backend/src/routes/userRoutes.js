@@ -1,7 +1,7 @@
 import express from "express";
 import viewProfile from "../controllers/users/viewProfile.js";
 import uploadProfile from "../controllers/users/uploadProfile.js";
-import { authorizeRole, verifyToken } from "../middleware/verifyJwt.js";
+import { authorizeRole, verifyToken } from "../middleware/verifyAccessToken.js";
 import { parser } from "../middleware/multer.js";
 
 const router = express.Router();

@@ -1,5 +1,5 @@
 import express from "express";
-import { authorizeRole, verifyToken } from "../middleware/verifyJwt.js";
+import { authorizeRole, verifyToken } from "../middleware/verifyAccessToken.js";
 import googleLogin from "../controllers/authentication/googleLogin.js";
 import changePassword from "../controllers/authentication/changePassword.js";
 import forgotPassword from "../controllers/authentication/forgotPassword.js";
