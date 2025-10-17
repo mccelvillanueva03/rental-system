@@ -11,7 +11,12 @@ import verifyForgotPassword from "../controllers/authentication/verifyForgotPass
 import { refreshToken } from "../controllers/authentication/refreshToken.js";
 import logout from "../controllers/authentication/logout.js";
 import cancelVerifyEmail from "../controllers/authentication/cancelVerifyEmail.js";
-import { otpPurpose, verifyOtpToken } from "../middleware/verifyOtpToken.js";
+import {
+  otpPurpose,
+  verifyOtpToken,
+  verifyResetPasswordToken,
+} from "../middleware/verifyOtpToken.js";
+import resetPassword from "../controllers/authentication/resetPassword.js";
 
 const router = express.Router();
 //protected routes
@@ -33,6 +38,18 @@ router.post(
   otpPurpose("verify_signup_email"),
   verifyEmail
 );
+router.post(
+  "/verify-forgot-password",
+  verifyOtpToken,
+  otpPurpose("forgot_password"),
+  verifyForgotPassword
+);
+router.post(
+  "/reset-password",
+  verifyResetPasswordToken,
+  otpPurpose("reset_password"),
+  resetPassword
+);
 //public routes
 router.post("/refreshToken", refreshToken);
 router.post("/login", login);
@@ -40,7 +57,6 @@ router.post("/signup", signup);
 router.post("/cancel-signup", cancelVerifyEmail);
 router.post("/resend-signup-otp", resendOTP);
 router.post("/forgot-password", forgotPassword);
-router.post("/verify-forgot-password", verifyForgotPassword);
 
 //Google OAuth
 router.post("/google-login", googleLogin);

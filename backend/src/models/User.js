@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 import {
-  compareOTP,
   comparePassword,
 } from "../middleware/compareUserBcrypt.js";
 import hashUserData from "../middleware/hashUserData.js";
@@ -65,7 +64,6 @@ const userSchema = new mongoose.Schema(
 userSchema.pre("save", hashUserData);
 userSchema.pre("save", passwordChanged);
 userSchema.methods.comparePassword = comparePassword;
-userSchema.methods.compareOTP = compareOTP;
 
 const User = mongoose.model("User", userSchema);
 export default User;
