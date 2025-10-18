@@ -71,13 +71,52 @@ export async function verifyResetPasswordToken(req, res, next) {
   }
 }
 
+export async function verifyChangePasswordToken(req, res, next) {
+  try {
+    const authHeaders = req.headers.authorization;
+
+    if (!authHeaders || !authHeaders.startsWith("Bearer "))
+      return res.status(401).json({ message: "Not Authorized" });
+
+    const cpToken = authHeaders.split(" ")[1];
+    const cpPayload = jwt.verify(
+      cpToken,
+      process.env.JWT_CHANGE_PASSWORD_SECRET
+    );
+
+    const user = await User.findById(cpPayload.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isBlacklisted = await isTokenBlackListed(cpPayload.jti);
+    if (isBlacklisted) {
+      return res.status(403).json({ message: "Token already used." });
+    }
+
+    req.user = user;
+    req.cpPayload = cpPayload;
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "OTP Token expired." });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid OTP Token." });
+    }
+    console.log("Error in Reset Password Token:", error);
+    return res.status(500).json({ message: "Server Error." });
+  }
+}
+
 export function otpPurpose(purpose) {
   return (req, res, next) => {
     try {
       if (!req.user)
         return res.status(401).json({ message: "User not Authenticated." });
 
-      const reqPurpose = req.otpPayload?.purpose ?? req.resetPayload?.purpose;
+      const reqPurpose =
+        req.otpPayload?.purpose ??
+        req.resetPayload?.purpose ??
+        req.cpPayload?.purpose;
 
       if (reqPurpose !== purpose)
         return res.status(403).json({ message: "Access Denied" });

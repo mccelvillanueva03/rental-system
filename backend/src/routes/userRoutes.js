@@ -1,7 +1,7 @@
 import express from "express";
 import viewProfile from "../controllers/users/viewProfile.js";
 import uploadProfile from "../controllers/users/uploadProfile.js";
-import { authorizeRole, verifyToken } from "../middleware/verifyAccessToken.js";
+import { authorizeRole, verifyAccessToken } from "../middleware/verifyAccessToken.js";
 import { parser } from "../middleware/multer.js";
 
 const router = express.Router();
@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/:id", viewProfile);
 router.post(
   "/upload-profile-image",
-  verifyToken,
+  verifyAccessToken,
   authorizeRole("tenant", "host", "admin"),
   (req, res, next) => {
     parser.single("profileImage")(req, res, function (err) {

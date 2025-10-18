@@ -1,16 +1,19 @@
 import User from "../../models/User.js";
+import { addToBlacklist } from "../../utils/blacklistToken.js";
 import { signAccessToken } from "../../utils/signTokens.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function changePassword(req, res) {
   try {
-    const { email, oldPassword, newPassword } = req.body || {};
-    if (!email || !oldPassword || !newPassword)
+    const { oldPassword, newPassword } = req.body || {};
+    const id = req.user.id;
+
+    if (!oldPassword || !newPassword)
       return res.status(400).json({ message: "All fields are required!." });
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findById(id).select("+password");
     //check if user existing
-    if (!user) return res.status(404).json({ message: "Email Not Found." });
+    if (!user) return res.status(404).json({ message: "User Not Found." });
     //check if email is verified
     if (!user.isEmailVerified)
       return res.status(401).json({ message: "Email is not verified!" });
@@ -35,6 +38,8 @@ async function changePassword(req, res) {
     delete userSafe.password;
     delete userSafe.refreshToken;
     delete userSafe.refreshTokenExpiresAt;
+
+    await addToBlacklist(req.cpPayload.jti, 600);
 
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)

@@ -1,5 +1,8 @@
 import express from "express";
-import { authorizeRole, verifyToken } from "../middleware/verifyAccessToken.js";
+import {
+  authorizeRole,
+  verifyAccessToken,
+} from "../middleware/verifyAccessToken.js";
 import googleLogin from "../controllers/authentication/googleLogin.js";
 import changePassword from "../controllers/authentication/changePassword.js";
 import forgotPassword from "../controllers/authentication/forgotPassword.js";
@@ -13,22 +16,25 @@ import logout from "../controllers/authentication/logout.js";
 import cancelVerifyEmail from "../controllers/authentication/cancelVerifyEmail.js";
 import {
   otpPurpose,
+  verifyChangePasswordToken,
   verifyOtpToken,
   verifyResetPasswordToken,
 } from "../middleware/verifyOtpToken.js";
 import resetPassword from "../controllers/authentication/resetPassword.js";
+import reqChangePassword from "../controllers/authentication/reqChangePassword.js";
+import verifyChangePassword from "../controllers/authentication/verifyChangePassword.js";
 
 const router = express.Router();
 //protected routes
 router.post(
   "/change-password",
-  verifyToken,
-  authorizeRole("tenant", "host", "admin"),
+  verifyChangePasswordToken,
+  otpPurpose("change_password"),
   changePassword
 );
 router.post(
   "/logout",
-  verifyToken,
+  verifyAccessToken,
   authorizeRole("tenant", "host", "admin"),
   logout
 );
@@ -49,6 +55,18 @@ router.post(
   verifyResetPasswordToken,
   otpPurpose("reset_password"),
   resetPassword
+);
+router.post(
+  "/request-change-password",
+  verifyAccessToken,
+  authorizeRole("tenant", "host", "admin"),
+  reqChangePassword
+);
+router.post(
+  "/verify-change-password",
+  verifyOtpToken,
+  otpPurpose("request_change_password"),
+  verifyChangePassword
 );
 //public routes
 router.post("/refreshToken", refreshToken);

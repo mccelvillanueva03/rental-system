@@ -16,11 +16,7 @@ async function verifyForgotPassword(req, res) {
     if (otp !== otpFromToken)
       return res.status(410).json({ message: "Invalid Code" });
 
-    const purpose = "reset_password";
-    const { resetPasswordToken, expiresIn } = signResetPasswordToken(
-      user,
-      purpose
-    );
+    const { resetPasswordToken, expiresIn } = signResetPasswordToken(user);
 
     await addToBlacklist(req.otpPayload.jti, 300);
     req.userId = id;

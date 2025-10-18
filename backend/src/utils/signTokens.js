@@ -2,15 +2,13 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
-const jti = uuidv4();
-
 //sign access and refresh token
 export const signAccessToken = (user) => {
   const payload = {
     id: user._id.toString(),
     email: user.email,
     role: user.role,
-    jti: jti,
+    jti: uuidv4(),
   };
 
   const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
@@ -34,7 +32,7 @@ export const signOtpToken = (user, purpose) => {
     email: user.email,
     otp: otp,
     purpose: purpose,
-    jti: jti,
+    jti: uuidv4(),
   };
   const otpToken = jwt.sign(payload, process.env.JWT_OTP_SECRET, {
     expiresIn: "10m",
@@ -44,11 +42,11 @@ export const signOtpToken = (user, purpose) => {
 };
 
 //sign reset password token
-export const signResetPasswordToken = (user, purpose) => {
+export const signResetPasswordToken = (user) => {
   const payload = {
     id: user._id.toString(),
-    purpose: purpose,
-    jti: jti,
+    purpose: "reset_password",
+    jti: uuidv4(),
   };
   const resetPasswordToken = jwt.sign(
     payload,
@@ -57,6 +55,24 @@ export const signResetPasswordToken = (user, purpose) => {
   );
   return {
     resetPasswordToken,
+    expiresIn: "10m",
+  };
+};
+
+//sign change password token
+export const signChangePasswordToken = (user) => {
+  const changePasswordPayload = {
+    id: user._id.toString(),
+    purpose: "change_password",
+    jti: uuidv4(),
+  };
+  const changePasswordToken = jwt.sign(
+    changePasswordPayload,
+    process.env.JWT_CHANGE_PASSWORD_SECRET,
+    { expiresIn: "10m" }
+  );
+  return {
+    changePasswordToken,
     expiresIn: "10m",
   };
 };

@@ -38,7 +38,7 @@ async function verifyEmail(req, res) {
     delete userSafe.refreshToken;
     delete userSafe.refreshTokenExpiresAt;
 
-    await addToBlacklist(req.otpPayload.jti, 300);
+    await addToBlacklist(req.otpPayload.jti, 600);
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)
       .status(200)
