@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
+import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -12,6 +10,7 @@ import reviewRouter from "./routes/reviewRoutes.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 
+dotenv.config();
 
 const app = express();
 app.use(cookieParser());
