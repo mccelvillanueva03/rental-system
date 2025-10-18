@@ -1,5 +1,5 @@
 import User from "../../models/User.js";
-import { signToken } from "../../utils/signAccessToken.js";
+import { signAccessToken } from "../../utils/signTokens.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function changePassword(req, res) {
@@ -24,7 +24,7 @@ async function changePassword(req, res) {
       return res.status(400).json({ message: "Password still the same" });
 
     const { accessToken, refreshToken, refreshTokenExpiresAt } =
-      signToken(user);
+      signAccessToken(user);
     user.refreshToken = refreshToken;
     user.refreshTokenExpiresAt = refreshTokenExpiresAt;
     user.password = newPassword;

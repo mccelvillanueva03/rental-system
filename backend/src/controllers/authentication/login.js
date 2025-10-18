@@ -1,5 +1,5 @@
 import User from "../../models/User.js";
-import { signToken } from "../../utils/signAccessToken.js";
+import { signAccessToken } from "../../utils/signTokens.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function login(req, res) {
@@ -22,7 +22,7 @@ async function login(req, res) {
     if (!ok) return res.status(401).json({ message: "Invalid credentials." });
 
     const { accessToken, refreshToken, refreshTokenExpiresAt } =
-      signToken(user);
+      signAccessToken(user);
     user.refreshToken = refreshToken;
     user.refreshTokenExpiresAt = refreshTokenExpiresAt;
     await user.save();

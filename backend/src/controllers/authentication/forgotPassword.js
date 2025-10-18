@@ -1,6 +1,6 @@
 import User from "../../models/User.js";
 import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
-import { signOtpToken } from "../../utils/signOtpToken.js";
+import { signOtpToken } from "../../utils/signTokens.js";
 
 async function forgotPassword(req, res) {
   try {

@@ -1,5 +1,5 @@
 import User from "../../models/User.js";
-import { signResetPasswordToken } from "../../utils/signOtpToken.js";
+import { signResetPasswordToken } from "../../utils/signTokens.js";
 import { addToBlacklist } from "../../utils/blacklistToken.js";
 
 async function verifyForgotPassword(req, res) {

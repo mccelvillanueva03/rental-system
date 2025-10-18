@@ -1,4 +1,4 @@
-import { signToken } from "../../utils/signAccessToken.js";
+import { signAccessToken } from "../../utils/signTokens.js";
 import User from "../../models/User.js";
 
 // Cookie options
@@ -49,7 +49,8 @@ export async function refreshToken(req, res) {
       accessToken,
       refreshToken: newRefreshToken,
       refreshTokenExpiresAt,
-    } = signToken(user);
+    } = signAccessToken(user);
+
     user.refreshToken = newRefreshToken;
     user.refreshTokenExpiresAt = refreshTokenExpiresAt;
     await user.save();

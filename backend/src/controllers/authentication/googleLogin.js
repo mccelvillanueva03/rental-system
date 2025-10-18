@@ -1,6 +1,6 @@
 import { OAuth2Client } from "google-auth-library";
 import User from "../../models/User.js";
-import { signToken } from "../../utils/signAccessToken.js";
+import { signAccessToken } from "../../utils/signTokens.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function googleLogin(req, res) {
@@ -40,7 +40,7 @@ async function googleLogin(req, res) {
       await user.save();
     }
     const { accessToken, refreshToken, refreshTokenExpiresAt } =
-      signToken(user);
+      signAccessToken(user);
 
     user.refreshToken = refreshToken;
     user.refreshTokenExpiresAt = refreshTokenExpiresAt;

@@ -1,6 +1,6 @@
 import User from "../../models/User.js";
 import { addToBlacklist } from "../../utils/blacklistToken.js";
-import { signToken } from "../../utils/signAccessToken.js";
+import { signAccessToken } from "../../utils/signTokens.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function resetPassword(req, res) {
@@ -13,7 +13,7 @@ async function resetPassword(req, res) {
     if (!user) return res.status(404).json("User not Found");
 
     const { accessToken, refreshToken, refreshTokenExpiresAt } =
-      signToken(user);
+      signAccessToken(user);
 
     user.password = newPassword;
     user.refreshToken = refreshToken;

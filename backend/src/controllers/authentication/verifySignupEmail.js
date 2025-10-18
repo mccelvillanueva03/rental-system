@@ -1,5 +1,5 @@
 import { addToBlacklist } from "../../utils/blacklistToken.js";
-import { signToken } from "../../utils/signAccessToken.js";
+import { signAccessToken } from "../../utils/signTokens.js";
 import { cookieOptions } from "./refreshToken.js";
 
 async function verifyEmail(req, res) {
@@ -25,7 +25,7 @@ async function verifyEmail(req, res) {
 
     //otp matched
     const { accessToken, refreshToken, refreshTokenExpiresAt } =
-      signToken(pendingUser);
+      signAccessToken(pendingUser);
 
     pendingUser.refreshToken = refreshToken;
     pendingUser.refreshTokenExpiresAt = refreshTokenExpiresAt;
