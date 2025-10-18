@@ -6,7 +6,6 @@ import {
 import googleLogin from "../controllers/authentication/googleLogin.js";
 import changePassword from "../controllers/authentication/changePassword.js";
 import forgotPassword from "../controllers/authentication/forgotPassword.js";
-import resendOTP from "../controllers/authentication/resendOtp.js";
 import verifyEmail from "../controllers/authentication/verifySignupEmail.js";
 import login from "../controllers/authentication/login.js";
 import signup from "../controllers/authentication/signup.js";
@@ -73,7 +72,6 @@ router.post("/refreshToken", refreshToken);
 router.post("/login", login);
 router.post("/signup", signup);
 router.post("/cancel-signup", cancelVerifyEmail);
-router.post("/resend-signup-otp", resendOTP);
 router.post("/forgot-password", forgotPassword);
 
 //Google OAuth
