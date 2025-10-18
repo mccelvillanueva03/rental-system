@@ -1,10 +1,9 @@
 import express from "express";
-import {
-  authorizeRole,
-  verifyAccessToken,
-} from "../middleware/verifyAccessToken.js";
+// import {
+//   authorizeRole,
+//   verifyAccessToken,
+// } from "../middleware/verifyAccessToken.js";
 import googleLogin from "../controllers/authentication/googleLogin.js";
-import changePassword from "../controllers/users/changePassword.js";
 import forgotPassword from "../controllers/authentication/forgotPassword.js";
 import verifyEmail from "../controllers/authentication/verifySignupEmail.js";
 import login from "../controllers/authentication/login.js";
@@ -15,34 +14,37 @@ import logout from "../controllers/authentication/logout.js";
 import cancelVerifyEmail from "../controllers/authentication/cancelVerifyEmail.js";
 import {
   otpPurpose,
-  verifyChangePasswordToken,
   verifyOtpToken,
   verifyResetPasswordToken,
-} from "../middleware/verifyOtpToken.js";
+  verifyAccessToken,
+  authorizeRole,
+} from "../middleware/verifyToken.js";
 import resetPassword from "../controllers/authentication/resetPassword.js";
-import reqChangePassword from "../controllers/users/reqChangePassword.js";
-import verifyChangePassword from "../controllers/users/verifyChangePassword.js";
 
 const router = express.Router();
 //protected routes
+//logout route
 router.post(
   "/logout",
   verifyAccessToken,
   authorizeRole("tenant", "host", "admin"),
   logout
 );
+//verify email route
 router.post(
   "/verify-signup-email",
   verifyOtpToken,
   otpPurpose("verify_signup_email"),
   verifyEmail
 );
+//verify forgot password route
 router.post(
   "/verify-forgot-password",
   verifyOtpToken,
   otpPurpose("forgot_password"),
   verifyForgotPassword
 );
+//reset password route
 router.post(
   "/reset-password",
   verifyResetPasswordToken,
@@ -50,7 +52,7 @@ router.post(
   resetPassword
 );
 //public routes
-router.post("/refreshToken", refreshToken);
+router.post("/refreshToken", refreshToken);//token refresh route
 router.post("/login", login);
 router.post("/signup", signup);
 router.post("/cancel-signup", cancelVerifyEmail);

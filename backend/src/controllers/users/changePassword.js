@@ -39,7 +39,7 @@ async function changePassword(req, res) {
     delete userSafe.refreshToken;
     delete userSafe.refreshTokenExpiresAt;
 
-    await addToBlacklist(req.cpPayload.jti, 600);
+    await addToBlacklist(req.changePasswordPayload.jti, 600);
 
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)

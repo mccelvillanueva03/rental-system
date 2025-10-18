@@ -1,16 +1,15 @@
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import cloudinary from "../config/cloudinaryConfig.js";
-
+//multer middleware for handling profile image uploads
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder: (req) => `LongStay/profile-images/${req.user.id}`,
+  params: {//folder name in cloudinary
+    folder: (req) => `LongStay/profile-image/${req.user.id}`,
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
     transformation: [{ width: 500, height: 500, crop: "limit" }],
   },
 });
-
 export const parser = multer({
   storage,
   fileFilter: (req, file, cb) => {
