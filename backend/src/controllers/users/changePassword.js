@@ -44,6 +44,7 @@ async function changePassword(req, res) {
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)
       .cookie("accessToken", accessToken, cookieOptions)
+      .clearCookie("changePasswordToken", cookieOptions)
       .status(200)
       .json({ user: userSafe });
   } catch (error) {

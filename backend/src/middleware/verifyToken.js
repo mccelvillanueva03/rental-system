@@ -36,12 +36,12 @@ export function verifyToken(secret, tokenKey, payloadKey) {
       next();
     } catch (error) {
       if (error.name === "TokenExpiredError") {
-        return res.status(401).json({ message: "OTP Token expired." });
+        return res.status(401).json({ message: "Token expired." });
       }
       if (error.name === "JsonWebTokenError") {
-        return res.status(401).json({ message: "Invalid OTP Token." });
+        return res.status(401).json({ message: "Invalid JWT." });
       }
-      console.log("Error in verifying OTP Token:", error);
+      console.log("Error in verifying JWT:", error);
       return res.status(500).json({ message: "Server Error." });
     }
   };

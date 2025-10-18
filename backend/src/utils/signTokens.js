@@ -41,38 +41,30 @@ export const signOtpToken = (user, purpose) => {
   return { otpToken, otp, expiresIn: "10m" };
 };
 
-//sign reset password token
-export const signResetPasswordToken = (user) => {
+//sign password token (dynamic)
+export const signPasswordToken = (user, purpose, secret) => {
   const payload = {
     id: user._id.toString(),
-    purpose: "reset_password",
+    purpose: purpose,
     jti: uuidv4(),
   };
-  const resetPasswordToken = jwt.sign(
-    payload,
-    process.env.JWT_RESET_PASSWORD_SECRET,
-    { expiresIn: "10m" }
-  );
+  const token = jwt.sign(payload, secret, { expiresIn: "10m" });
   return {
-    resetPasswordToken,
+    token,
     expiresIn: "10m",
   };
 };
-
+//sign reset password token
+export const signResetPasswordToken = (user) =>
+  signPasswordToken(
+    user,
+    "reset_password",
+    process.env.JWT_RESET_PASSWORD_SECRET
+  );
 //sign change password token
-export const signChangePasswordToken = (user) => {
-  const changePasswordPayload = {
-    id: user._id.toString(),
-    purpose: "change_password",
-    jti: uuidv4(),
-  };
-  const changePasswordToken = jwt.sign(
-    changePasswordPayload,
-    process.env.JWT_CHANGE_PASSWORD_SECRET,
-    { expiresIn: "10m" }
+export const signChangePasswordToken = (user) =>
+  signPasswordToken(
+    user,
+    "change_password",
+    process.env.JWT_CHANGE_PASSWORD_SECRET
   );
-  return {
-    changePasswordToken,
-    expiresIn: "10m",
-  };
-};

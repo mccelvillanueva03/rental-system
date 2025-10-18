@@ -23,13 +23,14 @@ async function verifyChangePassword(req, res) {
     if (Date.now() / 1000 > req.otpPayload.exp) {
       return res.status(400).json({ message: "OTP expired." });
     }
-    const { changePasswordToken, expiresIn } = signChangePasswordToken(user);
+    const { token } = signChangePasswordToken(user);
 
     await addToBlacklist(req.otpPayload.jti, 300);
 
     req.userId = id;
     return res
-      .cookie("changePasswordToken", changePasswordToken, cookieOptions)
+      .cookie("changePasswordToken", token, cookieOptions)
+      .clearCookie("otpToken", cookieOptions)
       .status(200)
       .json({
         message: "Proceed to change password.",

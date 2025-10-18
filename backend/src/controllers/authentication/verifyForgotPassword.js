@@ -17,12 +17,12 @@ async function verifyForgotPassword(req, res) {
     if (otp !== otpFromToken)
       return res.status(410).json({ message: "Invalid Code" });
 
-    const { resetPasswordToken, expiresIn } = signResetPasswordToken(user);
+    const { token, expiresIn } = signResetPasswordToken(user);
 
     await addToBlacklist(req.otpPayload.jti, 300);
     req.userId = id;
     return res
-      .cookie("resetPasswordToken", resetPasswordToken, cookieOptions)
+      .cookie("resetPasswordToken", token, cookieOptions)
       .status(200)
       .json({ expiresIn });
   } catch (error) {
