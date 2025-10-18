@@ -1,5 +1,5 @@
 import express from "express";
-import { createReview } from "../controllers/reviewController/createReview.js";
+import { createReview } from "../controllers/review/createReview.js";
 import { authorizeRole, verifyAccessToken } from "../middleware/verifyAccessToken.js";
 
 const router = express.Router();
