@@ -1,6 +1,7 @@
 import User from "../../models/User.js";
 import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
 import { signOtpToken } from "../../utils/signTokens.js";
+import { cookieOptions } from "../authentication/refreshToken.js";
 
 async function reqChangePassword(req, res) {
   try {
@@ -19,8 +20,9 @@ async function reqChangePassword(req, res) {
 
     req.userId = id;
     return res
+      .cookie("otpToken", otpToken, cookieOptions)
       .status(200)
-      .json({ message: "OTP sent to email.", otpToken, expiresIn });
+      .json({ message: "OTP sent to email.", expiresIn });
   } catch (error) {
     console.log("Error in requesting Change Password", error);
     res.status(500).json({ message: "Server Error." });

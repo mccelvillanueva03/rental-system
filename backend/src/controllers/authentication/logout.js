@@ -31,6 +31,11 @@ async function logout(req, res) {
     //clear cookie from client side
     return res
       .clearCookie("refreshToken", cookieClearOptions)
+      .clearCookie("accessToken", cookieClearOptions)
+      .clearCookie("otpToken", cookieClearOptions)
+      .clearCookie("resetToken", cookieClearOptions)
+      .clearCookie("cpToken", cookieClearOptions)
+      .clearCookie("changePasswordToken", cookieClearOptions)
       .status(200)
       .json({ message: "Logged out successfully." });
   } catch (error) {

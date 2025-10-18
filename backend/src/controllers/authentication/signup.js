@@ -4,6 +4,7 @@ import User from "../../models/User.js";
 import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
 import { capitalizedFirstLetter } from "../../utils/capitalizedFirstLetter.js";
 import { signOtpToken } from "../../utils/signTokens.js";
+import { cookieOptions } from "./refreshToken.js";
 
 async function signup(req, res) {
   try {
@@ -48,8 +49,9 @@ async function signup(req, res) {
     sendEmailOTP(newUser, otp);
 
     return res
+      .cookie("otpToken", otpToken, cookieOptions)
       .status(200)
-      .json({ message: "OTP send successfully", otpToken, expiresIn });
+      .json({ message: "OTP sent successfully.", expiresIn });
   } catch (error) {
     if (error?.code === 409) {
       return res.status(409).json({ message: "Email is already in use." });

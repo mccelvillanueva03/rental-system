@@ -44,7 +44,7 @@ export async function refreshToken(req, res) {
         .status(403)
         .json({ message: "Refresh Token expired. Please login again." });
     }
-
+    // Generate new tokens
     const {
       accessToken,
       refreshToken: newRefreshToken,

@@ -34,8 +34,9 @@ async function login(req, res) {
 
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)
+      .cookie("accessToken", accessToken, cookieOptions)
       .status(200)
-      .json({ accessToken, user: userSafe });
+      .json({ user: userSafe });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Server error." });

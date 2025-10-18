@@ -1,6 +1,7 @@
 import { signChangePasswordToken } from "../../utils/signTokens.js";
 import User from "../../models/User.js";
 import { addToBlacklist } from "../../utils/blacklistToken.js";
+import { cookieOptions } from "../authentication/refreshToken.js";
 
 async function verifyChangePassword(req, res) {
   try {
@@ -22,12 +23,17 @@ async function verifyChangePassword(req, res) {
     if (Date.now() / 1000 > req.otpPayload.exp) {
       return res.status(400).json({ message: "OTP expired." });
     }
-      const { changePasswordToken, expiresIn } = signChangePasswordToken(user);
+    const { changePasswordToken, expiresIn } = signChangePasswordToken(user);
 
     await addToBlacklist(req.otpPayload.jti, 300);
 
     req.userId = id;
-    return res.status(200).json({ changePasswordToken, expiresIn });
+    return res
+      .cookie("changePasswordToken", changePasswordToken, cookieOptions)
+      .status(200)
+      .json({
+        message: "Proceed to change password.",
+      });
   } catch (error) {
     console.log("Error in verifying Change Password.", error);
     return res.status(500).json({ message: "Server Error." });

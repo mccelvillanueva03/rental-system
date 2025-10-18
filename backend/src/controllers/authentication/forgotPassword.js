@@ -1,6 +1,7 @@
 import User from "../../models/User.js";
 import { sendEmailOTP } from "../../utils/sendEmailOTP.js";
 import { signOtpToken } from "../../utils/signTokens.js";
+import { cookieOptions } from "./refreshToken.js";
 
 async function forgotPassword(req, res) {
   try {
@@ -23,8 +24,9 @@ async function forgotPassword(req, res) {
     sendEmailOTP(user, otp);
 
     return res
+      .cookie("otpToken", otpToken, cookieOptions)
       .status(200)
-      .json({ message: "OTP send successfully.", otpToken, expiresIn });
+      .json({ message: "OTP send successfully.", expiresIn });
   } catch (error) {
     console.log("Error in Forgot Password.", error);
     res.status(500).json({ message: "Server Error." });

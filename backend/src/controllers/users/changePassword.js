@@ -43,8 +43,9 @@ async function changePassword(req, res) {
 
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)
+      .cookie("accessToken", accessToken, cookieOptions)
       .status(200)
-      .json({ accessToken, user: userSafe });
+      .json({ user: userSafe });
   } catch (error) {
     console.log("Error in Changing Password.", error);
     res.status(500).json({ message: "Server Error." });
