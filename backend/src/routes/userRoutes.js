@@ -1,8 +1,19 @@
 import express from "express";
 import viewProfile from "../controllers/users/viewProfile.js";
 import uploadProfile from "../controllers/users/uploadProfile.js";
-import { authorizeRole, verifyAccessToken } from "../middleware/verifyAccessToken.js";
+import {
+  authorizeRole,
+  verifyAccessToken,
+} from "../middleware/verifyAccessToken.js";
 import { parser } from "../middleware/multer.js";
+import {
+  otpPurpose,
+  verifyChangePasswordToken,
+  verifyOtpToken,
+} from "../middleware/verifyOtpToken.js";
+import changePassword from "../controllers/users/changePassword.js";
+import verifyChangePassword from "../controllers/users/verifyChangePassword.js";
+import reqChangePassword from "../controllers/users/reqChangePassword.js";
 
 const router = express.Router();
 
@@ -21,6 +32,25 @@ router.post(
     });
   },
   uploadProfile
+);
+//Change Password Routes
+router.post(
+  "/request-change-password",
+  verifyAccessToken,
+  authorizeRole("tenant", "host", "admin"),
+  reqChangePassword
+);
+router.post(
+  "/verify-change-password",
+  verifyOtpToken,
+  otpPurpose("request_change_password"),
+  verifyChangePassword
+);
+router.post(
+  "/change-password",
+  verifyChangePasswordToken,
+  otpPurpose("change_password"),
+  changePassword
 );
 
 export default router;

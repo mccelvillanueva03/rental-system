@@ -1,7 +1,7 @@
 import User from "../../models/User.js";
 import { addToBlacklist } from "../../utils/blacklistToken.js";
 import { signAccessToken } from "../../utils/signTokens.js";
-import { cookieOptions } from "./refreshToken.js";
+import { cookieOptions } from "../authentication/refreshToken.js";
 
 async function changePassword(req, res) {
   try {

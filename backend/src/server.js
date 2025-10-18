@@ -30,7 +30,7 @@ if (process.env.NODE_ENV !== "production") {
 app.use(express.json());
 app.use(rateLimiter);
 
-app.use("/api/users", userRouter);
+app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/reviews", reviewRouter);
 
