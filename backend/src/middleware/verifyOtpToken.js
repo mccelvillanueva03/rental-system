@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { isTokenBlackListed } from "../utils/blacklistToken.js";
 
 export async function verifyOtpToken(req, res, next) {
   try {
@@ -13,6 +14,11 @@ export async function verifyOtpToken(req, res, next) {
 
     const user = await User.findById(otpPayload.id);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isBlacklisted = await isTokenBlackListed(otpPayload.jti);
+    if (isBlacklisted) {
+      return res.status(403).json({ message: "Token already used." });
+    }
 
     req.user = user;
     req.otpPayload = otpPayload;
@@ -45,6 +51,11 @@ export async function verifyResetPasswordToken(req, res, next) {
     const user = await User.findById(resetPayload.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const isBlacklisted = await isTokenBlackListed(resetPayload.jti);
+    if (isBlacklisted) {
+      return res.status(403).json({ message: "Token already used." });
+    }
+
     req.user = user;
     req.resetPayload = resetPayload;
     next();
@@ -55,7 +66,7 @@ export async function verifyResetPasswordToken(req, res, next) {
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({ message: "Invalid OTP Token." });
     }
-    console.log("Error in verifying OTP Token:", error);
+    console.log("Error in Reset Password Token:", error);
     return res.status(500).json({ message: "Server Error." });
   }
 }

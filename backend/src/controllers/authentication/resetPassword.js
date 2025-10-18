@@ -1,4 +1,5 @@
 import User from "../../models/User.js";
+import { addToBlacklist } from "../../utils/blacklistToken.js";
 import { signToken } from "../../utils/signAccessToken.js";
 import { cookieOptions } from "./refreshToken.js";
 
@@ -24,6 +25,7 @@ async function resetPassword(req, res) {
     delete userSafe.refreshToken;
     delete userSafe.refreshTokenExpiresAt;
 
+    await addToBlacklist(req.resetPayload.jti, 600);
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)
       .status(200)

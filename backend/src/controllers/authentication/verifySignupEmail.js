@@ -1,3 +1,4 @@
+import { addToBlacklist } from "../../utils/blacklistToken.js";
 import { signToken } from "../../utils/signAccessToken.js";
 import { cookieOptions } from "./refreshToken.js";
 
@@ -37,6 +38,7 @@ async function verifyEmail(req, res) {
     delete userSafe.refreshToken;
     delete userSafe.refreshTokenExpiresAt;
 
+    await addToBlacklist(req.otpPayload.jti, 300);
     return res
       .cookie("refreshToken", refreshToken, cookieOptions)
       .status(200)

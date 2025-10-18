@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { isTokenBlackListed } from "../utils/blacklistToken.js";
 
 export async function verifyToken(req, res, next) {
   try {
@@ -11,10 +12,15 @@ export async function verifyToken(req, res, next) {
     const token = authHeaders.split(" ")[1];
 
     //Verify with ACCESS secret
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const accessPayload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
     const user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ message: "User Not Found." });
+
+    const isBlacklisted = await isTokenBlackListed(accessPayload.jti);
+    if (isBlacklisted) {
+      return res.status(403).json({ message: "Token already used." });
+    }
 
     //check if user changed password after token was issued
     if (user.passwordChangedAt) {
@@ -27,6 +33,7 @@ export async function verifyToken(req, res, next) {
           message: "Password was changed. Please log in again.",
         });
     }
+
     req.user = user;
     next();
   } catch (error) {

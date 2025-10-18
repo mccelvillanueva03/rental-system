@@ -1,5 +1,6 @@
 import User from "../../models/User.js";
 import { signResetPasswordToken } from "../../utils/signOtpToken.js";
+import { addToBlacklist } from "../../utils/blacklistToken.js";
 
 async function verifyForgotPassword(req, res) {
   try {
@@ -14,15 +15,14 @@ async function verifyForgotPassword(req, res) {
     //check if otp is matched
     if (otp !== otpFromToken)
       return res.status(410).json({ message: "Invalid Code" });
-    //check otp if expired
-    if (Date.now() / 1000 > req.otpPayload.exp) {
-      return res.status(410).json({ message: "OTP expired." });
-    }
+
     const purpose = "reset_password";
     const { resetPasswordToken, expiresIn } = signResetPasswordToken(
       user,
       purpose
     );
+
+    await addToBlacklist(req.otpPayload.jti, 300);
     req.userId = id;
     return res.status(200).json({ resetPasswordToken, expiresIn });
   } catch (error) {
